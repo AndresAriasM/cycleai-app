@@ -370,7 +370,7 @@ const MenuScreen: React.FC = () => {
             src="/src/assets/logo/logo.png" 
             alt="CycleAI" 
             style={{
-              height: '80px',
+              height: '40px',
               width: 'auto',
               maxWidth: '200px',
               objectFit: 'contain',
@@ -614,6 +614,7 @@ const MenuScreen: React.FC = () => {
                 <div key={index} style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                   <div 
                     style={categoryCircleStyle(category.color)}
+                    onClick={() => navigate('/analysis', { state: { selectedCategory: category } })}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >

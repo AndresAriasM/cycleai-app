@@ -6,6 +6,7 @@ import CreateUserScreen from './screens/auth/CreateUserScreen';
 import ForgotPasswordScreen from './screens/auth/ForgotPasswordScreen';
 import MenuScreen from './screens/menu/MenuScreen';
 import ProfileScreen from './screens/profile/ProfileScreen';
+import AnalysisScreen from './screens/analysis/AnalysisScreen';
 // import ProfileScreen from './screens/profile/ProfileScreen';
 // import DashboardScreen from './screens/dashboard/DashboardScreen';
 
@@ -29,7 +30,7 @@ const App: React.FC = () => {
           {/* Pantallas futuras */}
           {/* <Route path="/profile" element={<ProfileScreen />} /> */}
           {/* <Route path="/dashboard" element={<DashboardScreen />} /> */}
-          {/* <Route path="/analysis" element={<AnalysisScreen />} /> */}
+          <Route path="/analysis" element={<AnalysisScreen />} />
           {/* <Route path="/ai-tools" element={<AIToolsScreen />} /> */}
           
           {/* Ruta 404 - redireccionar al login */}
