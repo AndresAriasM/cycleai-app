@@ -363,26 +363,49 @@ const MenuScreen: React.FC = () => {
           padding: '1rem 1.5rem',
           borderTop: '1px solid rgba(255,255,255,0.1)',
           display: 'flex',
-          alignItems: 'center'
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
-          <div style={{
-            width: '45px',
-            height: '45px',
-            background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '1.2rem',
-            marginRight: '0.75rem'
-          }}>
-            C
-          </div>
-          <span style={{color: 'white', fontWeight: 'bold', fontSize: '1.3rem'}}>
-            CycleAI
-          </span>
+          <img 
+            src="/src/assets/logo/logo.png" 
+            alt="CycleAI" 
+            style={{
+              height: '80px',
+              width: 'auto',
+              maxWidth: '200px',
+              objectFit: 'contain',
+              // Removemos el filtro problemático
+              opacity: 0.95
+            }}
+            onError={(e) => {
+              // Fallback si la imagen no carga
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const fallback = document.createElement('div');
+              fallback.style.cssText = `
+                display: flex;
+                align-items: center;
+                color: white;
+                font-weight: bold;
+                font-size: 1.3rem;
+              `;
+              fallback.innerHTML = `
+                <div style="
+                  width: 45px;
+                  height: 45px;
+                  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+                  border-radius: 12px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin-right: 0.75rem;
+                  font-size: 1.2rem;
+                ">C</div>
+                <span>CycleAI</span>
+              `;
+              target.parentElement?.appendChild(fallback);
+            }}
+          />
         </div>
       </div>
 

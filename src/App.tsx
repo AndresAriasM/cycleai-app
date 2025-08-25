@@ -5,6 +5,7 @@ import LoginScreen from './screens/auth/LoginScreen';
 import CreateUserScreen from './screens/auth/CreateUserScreen';
 import ForgotPasswordScreen from './screens/auth/ForgotPasswordScreen';
 import MenuScreen from './screens/menu/MenuScreen';
+import ProfileScreen from './screens/profile/ProfileScreen';
 // import ProfileScreen from './screens/profile/ProfileScreen';
 // import DashboardScreen from './screens/dashboard/DashboardScreen';
 
@@ -23,6 +24,7 @@ const App: React.FC = () => {
           
           {/* Pantalla principal del menú */}
           <Route path="/menu" element={<MenuScreen />} />
+          <Route path="/profile" element={<ProfileScreen />} />
           
           {/* Pantallas futuras */}
           {/* <Route path="/profile" element={<ProfileScreen />} /> */}
