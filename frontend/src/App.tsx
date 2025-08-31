@@ -7,8 +7,7 @@ import ForgotPasswordScreen from './screens/auth/ForgotPasswordScreen';
 import MenuScreen from './screens/menu/MenuScreen';
 import ProfileScreen from './screens/profile/ProfileScreen';
 import AnalysisScreen from './screens/analysis/AnalysisScreen';
-// import ProfileScreen from './screens/profile/ProfileScreen';
-// import DashboardScreen from './screens/dashboard/DashboardScreen';
+import HypeCycleScreen from './screens/analysis/HypeCycleScreen'; // ✅ Añadido
 
 const App: React.FC = () => {
   return (
@@ -27,11 +26,9 @@ const App: React.FC = () => {
           <Route path="/menu" element={<MenuScreen />} />
           <Route path="/profile" element={<ProfileScreen />} />
           
-          {/* Pantallas futuras */}
-          {/* <Route path="/profile" element={<ProfileScreen />} /> */}
-          {/* <Route path="/dashboard" element={<DashboardScreen />} /> */}
+          {/* Análisis */}
           <Route path="/analysis" element={<AnalysisScreen />} />
-          {/* <Route path="/ai-tools" element={<AIToolsScreen />} /> */}
+          <Route path="/hypecycle" element={<HypeCycleScreen />} /> {/* ✅ Añadido */}
           
           {/* Ruta 404 - redireccionar al login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
