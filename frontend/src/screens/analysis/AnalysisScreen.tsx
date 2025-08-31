@@ -222,8 +222,13 @@ const AnalysisScreen: React.FC = () => {
 
   const handleCategorySelect = (category: AnalysisCategory) => {
     if (category.isComingSoon) {
-      // Mostrar mensaje de próximamente
       alert('¡Esta funcionalidad estará disponible pronto!');
+      return;
+    }
+    
+    // ✅ AÑADIR ESTA CONDICIÓN:
+    if (category.id === 'hypecycle-gartner') {
+      navigate('/hypecycle');
       return;
     }
     

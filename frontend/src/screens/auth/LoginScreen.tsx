@@ -293,7 +293,7 @@ const LoginScreen: React.FC = () => {
               <img 
                 src="/src/assets/logo/logo.png" 
                 alt="CycleAI" 
-                style={{...logoStyle, width: '120px', height: '120px'}}
+                style={{...logoStyle, width: '250px', height: '110px'}}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';

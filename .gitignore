@@ -7,14 +7,48 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# React/Node.js dependencies
 node_modules
 dist
 dist-ssr
 *.local
+build/
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.env-python
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+.tox/
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo
@@ -22,3 +56,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Seguridad
+.env
+.env.local
+.env.*.local
+.envrc
+*.pem
+*.p12
+
+# Archivos de configuración local
+.flaskenv
+instance/
+.webassets-cache
+
+# Base de datos
+*.db
+*.sqlite3
+
+# Archivos generados
+.eslintcache

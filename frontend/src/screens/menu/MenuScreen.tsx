@@ -370,7 +370,7 @@ const MenuScreen: React.FC = () => {
             src="/src/assets/logo/logo.png" 
             alt="CycleAI" 
             style={{
-              height: '40px',
+              height: '80px',
               width: 'auto',
               maxWidth: '200px',
               objectFit: 'contain',
