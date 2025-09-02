@@ -17,7 +17,8 @@ import {
   Clock,
   Users,
   ChevronRight,
-  Play
+  Play,
+  Award
 } from 'lucide-react';
 
 // Interfaces
@@ -149,6 +150,21 @@ const AnalysisScreen: React.FC = () => {
       outputs: ['Escenarios detallados', 'Implicaciones estratégicas', 'Señales de alerta']
     },
     {
+      id: 'test-innovacion-empresarial',
+      name: 'Test de Innovación Empresarial',
+      shortName: 'Test Innovación',
+      description: 'Evaluación rápida de capacidades de innovación empresarial',
+      longDescription: 'Herramienta de autoevaluación que mide las capacidades de innovación de una empresa en tres dimensiones clave: alineamiento estratégico, capacidades de absorción e innovación sostenible.',
+      color: '#f59e0b',
+      icon: Award,
+      difficulty: 'Básico',
+      estimatedTime: '10-15 min',
+      popularity: 87,
+      isNew: true,
+      requirements: ['Conocimiento organizacional', 'Procesos internos'],
+      outputs: ['Diagnóstico de innovación', 'Gráfico de araña', 'Recomendaciones personalizadas', 'Nivel de madurez']
+    },
+    {
       id: 'analisis-stakeholders',
       name: 'Análisis de Stakeholders',
       shortName: 'Stakeholders',
@@ -196,7 +212,7 @@ const AnalysisScreen: React.FC = () => {
     {
       title: 'Toma de Decisiones',
       categories: analysisCategories.filter(cat => 
-        ['metodo-mactun', 'analisis-stakeholders'].includes(cat.id)
+        ['metodo-mactun', 'analisis-stakeholders', 'test-innovacion-empresarial'].includes(cat.id)
       )
     },
     {
@@ -229,6 +245,11 @@ const AnalysisScreen: React.FC = () => {
     // ✅ AÑADIR ESTA CONDICIÓN:
     if (category.id === 'hypecycle-gartner') {
       navigate('/hypecycle');
+      return;
+    }
+
+    if (category.id === 'test-innovacion-empresarial') {
+      navigate('/innovation-test');
       return;
     }
     

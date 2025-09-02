@@ -6,8 +6,14 @@ import CreateUserScreen from './screens/auth/CreateUserScreen';
 import ForgotPasswordScreen from './screens/auth/ForgotPasswordScreen';
 import MenuScreen from './screens/menu/MenuScreen';
 import ProfileScreen from './screens/profile/ProfileScreen';
+import UserProfileScreen from './screens/profile/UserProfileScreen';
 import AnalysisScreen from './screens/analysis/AnalysisScreen';
-import HypeCycleScreen from './screens/analysis/HypeCycleScreen'; // ✅ Añadido
+import HypeCycleScreen from './screens/analysis/HypeCycleScreen';
+import InnovationTestScreen from './screens/analysis/InnovationTestScreen'; // ✅ Nuevo import
+import DataScreen from './screens/data/DataScreen';
+import ManagementScreen from './screens/management/ManagementScreen';  
+import ConfigScreen from './screens/config/ConfigScreen';
+import SupportScreen from './screens/support/SupportScreen';
 
 const App: React.FC = () => {
   return (
@@ -25,10 +31,16 @@ const App: React.FC = () => {
           {/* Pantalla principal del menú */}
           <Route path="/menu" element={<MenuScreen />} />
           <Route path="/profile" element={<ProfileScreen />} />
+          <Route path="/user-profile" element={<UserProfileScreen />} />
+          <Route path="/data" element={<DataScreen />} />
+          <Route path="/management" element={<ManagementScreen />} />
+          <Route path="/config" element={<ConfigScreen />} />
+          <Route path="/support" element={<SupportScreen />} />
           
           {/* Análisis */}
           <Route path="/analysis" element={<AnalysisScreen />} />
-          <Route path="/hypecycle" element={<HypeCycleScreen />} /> {/* ✅ Añadido */}
+          <Route path="/hypecycle" element={<HypeCycleScreen />} />
+          <Route path="/innovation-test" element={<InnovationTestScreen />} /> {/* ✅ Nueva ruta */}
           
           {/* Ruta 404 - redireccionar al login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
