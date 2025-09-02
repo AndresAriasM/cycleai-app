@@ -1,0 +1,278 @@
+// src/styles/base/_reset.scss
+
+// ========================================
+// CSS RESET - CycleAI
+// ========================================
+
+// Modern CSS Reset
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+// Root settings
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+// HTML & Body
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh; // Dynamic viewport height
+  font-family: $font-primary;
+  font-size: $font-base;
+  line-height: 1.6;
+  color: $text-primary;
+  background: $bg-secondary;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none; // Prevent bounce scroll on iOS
+}
+
+// Root container
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+// Typography reset
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: inherit;
+  font-size: inherit;
+  line-height: 1.2;
+  color: inherit;
+}
+
+p,
+li {
+  line-height: 1.6;
+}
+
+// Links
+a {
+  color: inherit;
+  text-decoration: inherit;
+  
+  &:focus-visible {
+    outline: 2px solid $primary-600;
+    outline-offset: 2px;
+    border-radius: $radius-sm;
+  }
+}
+
+// Form elements
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  
+  // Prevent zoom on iOS
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+button {
+  cursor: pointer;
+  min-height: 44px; // Touch-friendly minimum size
+  min-width: 44px;
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+// Form field specifics
+input,
+select,
+textarea {
+  &::placeholder {
+    color: $text-tertiary;
+    opacity: 1;
+  }
+  
+  &:focus {
+    outline: 2px solid $primary-600;
+    outline-offset: -2px;
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+// Lists
+ul,
+ol {
+  list-style: none;
+}
+
+// Media elements
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+img {
+  border-style: none;
+}
+
+svg {
+  fill: currentColor;
+}
+
+// Tables
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+td,
+th {
+  padding: 0;
+}
+
+// Remove default styling
+abbr[title] {
+  text-decoration: none;
+}
+
+// Focus styles
+:focus-visible {
+  outline: 2px solid $primary-600;
+  outline-offset: 2px;
+}
+
+// Selection
+::selection {
+  background: rgba($primary-600, 0.2);
+  color: $text-primary;
+}
+
+::-moz-selection {
+  background: rgba($primary-600, 0.2);
+  color: $text-primary;
+}
+
+// Scrollbar
+* {
+  @include custom-scrollbar(6px, $gray-100, $gray-400);
+}
+
+// Mobile optimizations
+@media (max-width: 767px) {
+  body {
+    font-size: $font-base;
+    line-height: 1.5;
+  }
+  
+  // Prevent horizontal scroll
+  html,
+  body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
+  // Better touch targets
+  button,
+  .touchable {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  // Prevent zoom on form focus
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  :focus-visible {
+    outline-width: 3px;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Print styles
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+  
+  img {
+    page-break-inside: avoid;
+  }
+  
+  h2,
+  h3,
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}
