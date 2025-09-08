@@ -1,7 +1,7 @@
 // src/screens/management/ManagementScreen.tsx - REFACTORIZADO
 import React, { useState } from 'react';
 import { 
-  Settings, 
+  //Settings, 
   Users, 
   Server, 
   FolderOpen, 

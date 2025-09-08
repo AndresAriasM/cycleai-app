@@ -5,7 +5,7 @@ import {
   BarChart3, 
   Brain, 
   ChevronRight,
-  TrendingUp
+  //TrendingUp
 } from 'lucide-react';
 import MainLayout from '../../components/layout/MainLayout';
 

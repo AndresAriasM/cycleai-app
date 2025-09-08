@@ -1,7 +1,7 @@
 // src/screens/auth/CreateUserScreen.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, User, Mail, Briefcase, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, User, ArrowLeft } from 'lucide-react';
 
 interface NewUser {
   id: string;

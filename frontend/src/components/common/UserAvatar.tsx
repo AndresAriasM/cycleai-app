@@ -22,12 +22,12 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   const [imageError, setImageError] = useState(false);
   
   // Configurar tamaños
-  const sizeClasses = {
+  /*const sizeClasses = {
     sm: { container: 'w-8 h-8', text: 'text-sm', icon: 16 },
     md: { container: 'w-12 h-12', text: 'text-base', icon: 20 },
     lg: { container: 'w-16 h-16', text: 'text-lg', icon: 24 },
     xl: { container: 'w-24 h-24', text: 'text-2xl', icon: 32 }
-  };
+  };*/
 
   const sizePixels = {
     sm: { size: '32px', fontSize: '14px', iconSize: 16 },

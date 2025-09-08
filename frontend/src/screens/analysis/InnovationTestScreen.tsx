@@ -7,7 +7,7 @@ import {
   CheckCircle, 
   Circle, 
   BarChart3, 
-  TrendingUp,
+  //TrendingUp,
   Award,
   Target,
   Lightbulb,
@@ -16,7 +16,7 @@ import {
   RefreshCw,
   AlertCircle,
   ChevronRight,
-  ChevronDown,
+  //ChevronDown,
   Users,
   Leaf,
   Settings
@@ -78,7 +78,7 @@ const InnovationTestScreen: React.FC = () => {
   const [answers, setAnswers] = useState<InnovationAnswer[]>([]);
   const [results, setResults] = useState<InnovationTestResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [expandedModule, setExpandedModule] = useState<string | null>(null);
+  //const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -610,7 +610,7 @@ const InnovationTestScreen: React.FC = () => {
                 Módulos de Evaluación:
               </h3>
               
-              {Object.entries(innovationModules).map(([moduleKey, module], index) => {
+              {Object.entries(innovationModules).map(([moduleKey, module]) => {
                 const Icon = getModuleIcon(moduleKey);
                 const color = getModuleColor(moduleKey);
                 
