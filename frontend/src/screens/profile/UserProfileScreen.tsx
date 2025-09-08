@@ -12,15 +12,15 @@ import {
   Phone,
   MapPin,
   Briefcase,
-  Calendar,
+  //Calendar,
   CreditCard,
   Bell,
   Shield,
   Download,
-  Upload,
+  //Upload,
   Trash2,
-  Eye,
-  EyeOff
+  //Eye,
+  //EyeOff
 } from 'lucide-react';
 import UserAvatar from '../../components/common/UserAvatar';
 

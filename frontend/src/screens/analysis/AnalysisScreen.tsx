@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft,
   Search,
-  Filter,
+  //Filter,
   Grid3X3,
   List,
   TrendingUp,

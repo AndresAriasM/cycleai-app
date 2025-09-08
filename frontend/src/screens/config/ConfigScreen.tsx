@@ -10,7 +10,7 @@ import {
   Brain, 
   Cog, 
   HelpCircle,
-  Search,
+  //Search,
   Filter,
   LogOut,
   Bell,
@@ -22,18 +22,18 @@ import {
   Globe, 
   Lock, 
   Download, 
-  Upload,
+  //Upload,
   Trash2,
   RefreshCw,
   Save,
   Eye,
-  EyeOff,
+  //EyeOff,
   Smartphone,
-  Laptop,
-  Tablet,
+  //Laptop,
+  //Tablet,
   Volume2,
-  VolumeX,
-  Wifi,
+  //VolumeX,
+  //Wifi,
   Battery,
   HardDrive,
   Shield
@@ -349,7 +349,7 @@ const ConfigScreen: React.FC = () => {
     minWidth: '120px'
   };
 
-  const inputStyle: React.CSSProperties = {
+  /*const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '0.875rem 1rem',
     background: 'white',
@@ -358,7 +358,7 @@ const ConfigScreen: React.FC = () => {
     color: '#1e293b',
     fontSize: '1rem',
     outline: 'none'
-  };
+  };*/
 
   // Renderizar tabs (adaptados al tema claro)
   const renderGeneralTab = () => (

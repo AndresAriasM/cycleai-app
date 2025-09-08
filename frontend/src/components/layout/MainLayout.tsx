@@ -6,7 +6,8 @@ import {
   Search, 
   Filter, 
   Bell, 
-  LogOut
+  LogOut,
+  X
 } from 'lucide-react';
 import Sidebar from './Sidebar';
 import UserAvatar from '../common/UserAvatar';
@@ -47,6 +48,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(searchValue);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   // Detectar cambios de tamaño de pantalla
   useEffect(() => {
@@ -55,6 +57,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       setIsMobile(mobile);
       if (!mobile) {
         setIsSidebarOpen(false);
+        setIsSearchExpanded(false);
       }
     };
 
@@ -96,6 +99,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     onSearchChange?.(value);
   };
 
+  const handleSearchToggle = () => {
+    if (isMobile) {
+      setIsSearchExpanded(!isSearchExpanded);
+      if (!isSearchExpanded) {
+        // Focus en el input cuando se expande
+        setTimeout(() => {
+          const searchInput = document.getElementById('mobile-search-input');
+          searchInput?.focus();
+        }, 100);
+      }
+    }
+  };
+
+  const handleSearchClose = () => {
+    setIsSearchExpanded(false);
+    setSearchQuery('');
+    onSearchChange?.('');
+  };
+
   const containerStyle: React.CSSProperties = {
     height: '100vh',
     display: 'flex',
@@ -135,6 +157,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     zIndex: 30
   };
 
+  // Header expandido para búsqueda en móvil
+  const expandedSearchStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '70px',
+    background: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 1rem',
+    zIndex: 35,
+    borderBottom: '1px solid #e2e8f0',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+  };
+
   const contentAreaStyle: React.CSSProperties = {
     flex: 1,
     padding: isMobile ? '1rem' : '2rem',
@@ -150,6 +188,30 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     fontSize: '0.9rem',
     outline: 'none',
     background: '#f8fafc'
+  };
+
+  const mobileSearchStyle: React.CSSProperties = {
+    flex: 1,
+    padding: '0.75rem 1rem',
+    border: '2px solid #e2e8f0',
+    borderRadius: '50px',
+    fontSize: '0.9rem',
+    outline: 'none',
+    background: '#f8fafc',
+    marginLeft: '1rem',
+    marginRight: '1rem'
+  };
+
+  const iconButtonStyle: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    padding: '0.5rem',
+    cursor: 'pointer',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background 0.2s ease'
   };
 
   return (
@@ -170,31 +232,28 @@ const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* Main Content */}
       <div style={mainContentStyle}>
-        {/* Header */}
+        {/* Header Normal */}
         <div style={headerStyle}>
           <div style={{display: 'flex', alignItems: 'center', flex: 1}}>
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '0.5rem',
-                marginRight: isMobile ? '0.75rem' : '1rem',
-                cursor: 'pointer',
-                borderRadius: '8px'
-              }}
+              style={iconButtonStyle}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
             >
               <Menu size={24} color="#64748b" />
             </button>
             
+            {/* Título - solo en desktop o cuando búsqueda no está expandida en móvil */}
             {!isMobile && (
-              <div style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', marginRight: '2rem'}}>
+              <div style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', marginLeft: '1rem', marginRight: '2rem'}}>
                 {title}
               </div>
             )}
 
-            {showSearch && (
-              <div style={{position: 'relative', flex: isMobile ? 1 : 'none', maxWidth: isMobile ? 'none' : '300px'}}>
+            {/* Búsqueda en Desktop */}
+            {!isMobile && showSearch && (
+              <div style={{position: 'relative', maxWidth: '300px'}}>
                 <Search size={18} style={{
                   position: 'absolute', 
                   left: '1rem', 
@@ -207,17 +266,49 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   style={searchStyle}
-                  placeholder={isMobile ? "¿Qué buscas?" : searchPlaceholder}
+                  placeholder={searchPlaceholder}
                 />
+                {searchQuery && (
+                  <div style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'flex',
+                    gap: '0.5rem'
+                  }}>
+                    <Filter size={16} color="#64748b" style={{cursor: 'pointer'}} />
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          <div style={{display: 'flex', alignItems: 'center', gap: isMobile ? '0.75rem' : '1rem'}}>
-            <Filter size={20} color="#64748b" style={{cursor: 'pointer'}} />
-            {!isMobile && <Bell size={20} color="#64748b" style={{cursor: 'pointer'}} />}
+          <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+            {/* Botón de búsqueda en móvil */}
+            {isMobile && showSearch && (
+              <button
+                onClick={handleSearchToggle}
+                style={iconButtonStyle}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+              >
+                <Search size={20} color="#64748b" />
+              </button>
+            )}
+
+            {/* Notificaciones - solo en desktop */}
+            {!isMobile && (
+              <button
+                style={iconButtonStyle}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+              >
+                <Bell size={20} color="#64748b" />
+              </button>
+            )}
             
-            {/* Avatar en header también clickeable */}
+            {/* Avatar clickeable */}
             <div onClick={handleProfileClick} style={{cursor: 'pointer'}}>
               <UserAvatar 
                 name={currentUser.name}
@@ -227,21 +318,43 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                 showStatus={true}
               />
             </div>
-            
-            <button
-              onClick={handleLogout}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0.5rem',
-                borderRadius: '8px'
-              }}
-            >
-              <LogOut size={20} color="#64748b" />
-            </button>
           </div>
         </div>
+
+        {/* Header de Búsqueda Expandida en Móvil */}
+        {isMobile && isSearchExpanded && (
+          <div style={expandedSearchStyle}>
+            <button
+              onClick={handleSearchClose}
+              style={iconButtonStyle}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+            >
+              <X size={20} color="#64748b" />
+            </button>
+            
+            <input
+              id="mobile-search-input"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              style={mobileSearchStyle}
+              placeholder="¿Qué buscas?"
+              autoFocus
+            />
+            
+            {/* Filtro aparece cuando hay texto en la búsqueda */}
+            {searchQuery && (
+              <button
+                style={iconButtonStyle}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+              >
+                <Filter size={20} color="#64748b" />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Content Area */}
         <div style={contentAreaStyle}>

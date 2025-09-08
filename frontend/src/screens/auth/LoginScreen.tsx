@@ -104,13 +104,13 @@ const LoginScreen: React.FC = () => {
     marginBottom: '1rem'
   };
 
-  const titleStyle: React.CSSProperties = {
+  /*const titleStyle: React.CSSProperties = {
     fontSize: '2.5rem',
     fontWeight: 'bold',
     color: 'white',
     marginBottom: '0.5rem',
     letterSpacing: '0.05em'
-  };
+  };*/
 
   const formContainerStyle: React.CSSProperties = {
     width: '100%',

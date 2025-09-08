@@ -140,7 +140,7 @@ const HypeCycleScreen: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const getTabIcon = (tab: string) => {
+  /*const getTabIcon = (tab: string) => {
     switch (tab) {
       case 'overview': return TrendingUp;
       case 'details': return BarChart3;
@@ -148,7 +148,7 @@ const HypeCycleScreen: React.FC = () => {
       case 'news': return Eye;
       default: return TrendingUp;
     }
-  };
+  };*/
 
   return (
     <div style={{ 

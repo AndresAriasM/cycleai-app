@@ -8,7 +8,7 @@ interface HypeCycleChartProps {
 }
 
 const HypeCycleChart: React.FC<HypeCycleChartProps> = ({ 
-  chartData, 
+  //chartData, 
   currentPhase, 
   isMobile 
 }) => {
