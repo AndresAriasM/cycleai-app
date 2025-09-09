@@ -338,7 +338,7 @@ const AnalysisScreen: React.FC = () => {
                         </p>
 
                         <div style={styles.metaContainer}>
-                          <div style={styles.difficultyBadge(getDifficultyColor(category.difficulty))}>
+                          <div style={styles.difficultyDot(getDifficultyColor(category.difficulty))}>
                             <div style={styles.difficultyDot(getDifficultyColor(category.difficulty))}></div>
                             {category.difficulty}
                           </div>

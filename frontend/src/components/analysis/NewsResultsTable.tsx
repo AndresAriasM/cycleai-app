@@ -279,7 +279,15 @@ const NewsResultsTable: React.FC<NewsResultsTableProps> = ({
         {paginatedResults.map((item, index) => (
           <div
             key={index}
-            style={newsTableStyles.newsItem(isMobile, index === paginatedResults.length - 1)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              padding: isMobile ? '1rem' : '1.25rem',
+              borderBottom: index === paginatedResults.length - 1 ? 'none' : '1px solid #e2e8f0',
+              background: 'white',
+              transition: 'background 0.2s ease',
+              cursor: 'pointer'
+            }}
             onMouseEnter={(e) => {
               if (!isMobile) e.currentTarget.style.background = '#f8fafc';
             }}

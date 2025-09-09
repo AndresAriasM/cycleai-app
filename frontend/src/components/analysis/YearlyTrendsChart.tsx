@@ -309,7 +309,17 @@ const YearlyTrendsChart: React.FC<YearlyTrendsChartProps> = ({
                 {years.map(year => (
                   <div 
                     key={year} 
-                    style={yearlyTrendsStyles.yearItem(isMobile)}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '0.75rem',
+                      background: '#f8fafc',
+                      borderRadius: '8px',
+                      marginBottom: '0.5rem',
+                      transition: 'background 0.2s ease',
+                      cursor: 'pointer'
+                    }}
                     onTouchStart={(e) => e.currentTarget.style.background = '#f1f5f9'}
                     onTouchEnd={(e) => e.currentTarget.style.background = '#f8fafc'}
                   >
@@ -378,7 +388,14 @@ const YearlyTrendsChart: React.FC<YearlyTrendsChartProps> = ({
       
       <div style={yearlyTrendsStyles.mainGrid(isMobile)}>
         {/* Chart */}
-        <div style={yearlyTrendsStyles.chartCard(isMobile)}>
+        <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: isMobile ? '1rem' : '1.5rem',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e2e8f0',
+            gridColumn: isMobile ? '1' : '1 / 3'
+          }}>
           <svg 
             viewBox="0 0 100 100" 
             style={yearlyTrendsStyles.svgContainer(isMobile)}
@@ -452,7 +469,12 @@ const YearlyTrendsChart: React.FC<YearlyTrendsChartProps> = ({
         </div>
         
         {/* Stats Table */}
-        <div style={yearlyTrendsStyles.statsContainer(isMobile)}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+          gridColumn: isMobile ? '1' : '3'
+        }}>
           <div style={yearlyTrendsStyles.statsCard}>
             <h4 style={yearlyTrendsStyles.statsTitle}>
               Estadísticas por Año
@@ -462,7 +484,17 @@ const YearlyTrendsChart: React.FC<YearlyTrendsChartProps> = ({
               {years.map(year => (
                 <div 
                   key={year} 
-                  style={yearlyTrendsStyles.yearItem(isMobile)}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1rem',
+                    background: '#f8fafc',
+                    borderRadius: '8px',
+                    marginBottom: '0.5rem',
+                    transition: 'background 0.2s ease',
+                    cursor: 'pointer'
+                  }}
                   onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
                   onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
                 >

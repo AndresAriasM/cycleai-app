@@ -1,16 +1,16 @@
 // src/components/layout/MainLayout.tsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-router-dom';
 import { 
   Menu, 
   Search, 
   Filter, 
   Bell, 
-  LogOut,
+  //LogOut,
   X
 } from 'lucide-react';
 import Sidebar from './Sidebar';
-import UserAvatar from '../common/UserAvatar';
+import UserDropdown from '../common/UserDropdown';
 
 interface User {
   id: string;
@@ -44,7 +44,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   onSearchChange,
   searchValue = ""
 }) => {
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(searchValue);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -83,15 +83,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     maxAnalysisCredits: 500,
     aiCredits: 101,
     maxAiCredits: 200,
-    avatar: '/src/assets/users/sergio.jpg'
-  };
-
-  const handleLogout = () => {
-    navigate('/login');
-  };
-
-  const handleProfileClick = () => {
-    navigate('/user-profile');
+    avatar: '/assets/users/sergio.jpg'
   };
 
   const handleSearchChange = (value: string) => {
@@ -308,16 +300,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({
               </button>
             )}
             
-            {/* Avatar clickeable */}
-            <div onClick={handleProfileClick} style={{cursor: 'pointer'}}>
-              <UserAvatar 
-                name={currentUser.name}
-                avatar={currentUser.avatar}
-                size="sm"
-                showBorder={true}
-                showStatus={true}
-              />
-            </div>
+            {/* UserDropdown */}
+            <UserDropdown 
+              currentUser={currentUser}
+              isMobile={isMobile}
+            />
           </div>
         </div>
 

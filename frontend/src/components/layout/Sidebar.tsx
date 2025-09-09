@@ -268,7 +268,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile, currentUse
         }}>
           {/* Logo Image */}
           <img 
-            src="/src/assets/logo/logo.png" 
+            src="/assets/logo/logo.png" 
             alt="CycleAI Logo" 
             style={{
               width: '180px',
