@@ -4,7 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft,
   Search,
-  //Filter,
   Grid3X3,
   List,
   TrendingUp,
@@ -20,6 +19,7 @@ import {
   Play,
   Award
 } from 'lucide-react';
+import { createAnalysisScreenStyles, getDifficultyColor } from '../../styles/analysisScreenStyles';
 
 // Interfaces
 interface AnalysisCategory {
@@ -51,6 +51,9 @@ const AnalysisScreen: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'popular' | 'new' | 'basic'>('all');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Create styles with current mobile state
+  const styles = createAnalysisScreenStyles({ isMobile });
 
   // Detectar tamaño de pantalla
   useEffect(() => {
@@ -242,7 +245,6 @@ const AnalysisScreen: React.FC = () => {
       return;
     }
     
-    // ✅ AÑADIR ESTA CONDICIÓN:
     if (category.id === 'hypecycle-gartner') {
       navigate('/hypecycle');
       return;
@@ -257,118 +259,256 @@ const AnalysisScreen: React.FC = () => {
     navigate(`/analysis/${category.id}`, { state: { category } });
   };
 
-  // Estilos
-  const containerStyle: React.CSSProperties = {
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-  };
-
-  const headerStyle: React.CSSProperties = {
-    background: 'white',
-    borderBottom: '1px solid #e2e8f0',
-    padding: isMobile ? '1rem' : '1.5rem 2rem',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-  };
-
-  const contentStyle: React.CSSProperties = {
-    padding: isMobile ? '1rem' : '2rem',
-    maxWidth: '1200px',
-    margin: '0 auto'
-  };
-
-  const cardStyle: React.CSSProperties = {
-    background: 'white',
-    borderRadius: '16px',
-    padding: isMobile ? '1.25rem' : '1.5rem',
-    marginBottom: '1.5rem',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-    border: '1px solid #e2e8f0',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease'
-  };
-
-  const searchBarStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: '400px',
-    padding: '0.75rem 1rem 0.75rem 3rem',
-    border: '2px solid #e2e8f0',
-    borderRadius: '50px',
-    fontSize: '1rem',
-    outline: 'none',
-    background: '#f8fafc'
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Básico': return '#10b981';
-      case 'Intermedio': return '#f59e0b';
-      case 'Avanzado': return '#ef4444';
-      default: return '#64748b';
+  const handleCardHover = (e: React.MouseEvent<HTMLDivElement>, isEntering: boolean) => {
+    if (isEntering) {
+      Object.assign(e.currentTarget.style, styles.cardHoverTransform);
+    } else {
+      e.currentTarget.style.transform = 'translateY(0)';
+      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
     }
   };
 
+  const handleListHover = (e: React.MouseEvent<HTMLDivElement>, isEntering: boolean) => {
+    if (isEntering) {
+      Object.assign(e.currentTarget.style, styles.listHoverTransform);
+    } else {
+      e.currentTarget.style.transform = 'translateX(0)';
+      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+    }
+  };
+
+  const filterOptions = [
+    { key: 'all', label: 'Todos' },
+    { key: 'popular', label: 'Populares' },
+    { key: 'new', label: 'Nuevos' },
+    { key: 'basic', label: 'Básicos' }
+  ];
+
+  const renderGridView = () => (
+    <div>
+      {categoryGroups.map((group, groupIndex) => (
+        <div key={groupIndex} style={styles.groupContainer}>
+          <h2 style={styles.groupTitle}>
+            {group.title}
+            <span style={styles.groupBadge}>
+              {group.categories.length}
+            </span>
+          </h2>
+
+          <div style={styles.gridContainer}>
+            {group.categories
+              .filter(cat => filteredCategories.includes(cat))
+              .map(category => {
+                const Icon = category.icon;
+                return (
+                  <div
+                    key={category.id}
+                    style={{
+                      ...styles.card,
+                      ...(category.isComingSoon ? styles.cardDisabled : {})
+                    }}
+                    onClick={() => handleCategorySelect(category)}
+                    onMouseEnter={(e) => handleCardHover(e, true)}
+                    onMouseLeave={(e) => handleCardHover(e, false)}
+                  >
+                    {category.isNew && (
+                      <div style={styles.newBadge}>
+                        NUEVO
+                      </div>
+                    )}
+                    
+                    {category.isComingSoon && (
+                      <div style={styles.comingSoonBadge}>
+                        PRÓXIMAMENTE
+                      </div>
+                    )}
+
+                    <div style={styles.cardHeader}>
+                      <div style={styles.categoryIcon(category.color)}>
+                        <Icon size={28} color="white" />
+                      </div>
+
+                      <div style={styles.cardContent}>
+                        <h3 style={styles.cardTitle}>
+                          {category.name}
+                        </h3>
+                        
+                        <p style={styles.cardDescription}>
+                          {category.description}
+                        </p>
+
+                        <div style={styles.metaContainer}>
+                          <div style={styles.difficultyBadge(getDifficultyColor(category.difficulty))}>
+                            <div style={styles.difficultyDot(getDifficultyColor(category.difficulty))}></div>
+                            {category.difficulty}
+                          </div>
+
+                          <div style={styles.metaItem}>
+                            <Clock size={14} style={{marginRight: '0.25rem'}} />
+                            {category.estimatedTime}
+                          </div>
+
+                          <div style={styles.metaItem}>
+                            <Star size={14} style={{marginRight: '0.25rem'}} />
+                            {category.popularity}%
+                          </div>
+                        </div>
+                      </div>
+
+                      <ChevronRight size={20} color="#cbd5e1" />
+                    </div>
+
+                    <div style={styles.longDescription}>
+                      <p style={styles.longDescriptionText}>
+                        {category.longDescription}
+                      </p>
+                    </div>
+
+                    {!category.isComingSoon && (
+                      <div style={styles.actionButtonContainer}>
+                        <button style={styles.actionButton(category.color)}>
+                          <Play size={16} />
+                          Comenzar Análisis
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderListView = () => (
+    <div style={styles.listContainer}>
+      {filteredCategories.map(category => {
+        const Icon = category.icon;
+        return (
+          <div
+            key={category.id}
+            style={{
+              ...styles.card,
+              ...styles.listCard,
+              ...(category.isComingSoon ? styles.cardDisabled : {})
+            }}
+            onClick={() => handleCategorySelect(category)}
+            onMouseEnter={(e) => handleListHover(e, true)}
+            onMouseLeave={(e) => handleListHover(e, false)}
+          >
+            <div style={styles.listCardContent}>
+              <div style={styles.listIcon(category.color)}>
+                <Icon size={24} color="white" />
+              </div>
+
+              <div style={styles.listContent}>
+                <div style={styles.listHeader}>
+                  <h3 style={styles.listTitle}>
+                    {category.name}
+                  </h3>
+                  
+                  {category.isNew && (
+                    <span style={styles.listBadge('#10b981')}>
+                      NUEVO
+                    </span>
+                  )}
+                  
+                  {category.isComingSoon && (
+                    <span style={styles.listBadge('#f59e0b')}>
+                      PRÓXIMAMENTE
+                    </span>
+                  )}
+                </div>
+
+                <p style={styles.listDescription}>
+                  {category.description}
+                </p>
+
+                <div style={styles.listMeta}>
+                  <div style={styles.listMetaItem}>
+                    <div style={styles.difficultyDot(getDifficultyColor(category.difficulty))}></div>
+                    {category.difficulty}
+                  </div>
+                  
+                  <div style={styles.listMetaItem}>
+                    <Clock size={12} />
+                    {category.estimatedTime}
+                  </div>
+                  
+                  <div style={styles.listMetaItem}>
+                    <Star size={12} />
+                    {category.popularity}%
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.listActions}>
+                {!category.isComingSoon && (
+                  <button style={styles.listActionButton(category.color)}>
+                    <Play size={14} />
+                    Comenzar
+                  </button>
+                )}
+                <ChevronRight size={20} color="#cbd5e1" />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const renderEmptyState = () => (
+    <div style={styles.emptyState}>
+      <div style={styles.emptyStateIcon}>
+        🔍
+      </div>
+      <h3 style={styles.emptyStateTitle}>
+        No se encontraron resultados
+      </h3>
+      <p style={styles.emptyStateDescription}>
+        Intenta con otros términos de búsqueda o cambia los filtros
+      </p>
+      <button
+        onClick={() => {
+          setSearchQuery('');
+          setSelectedFilter('all');
+        }}
+        style={styles.emptyStateButton}
+      >
+        Limpiar filtros
+      </button>
+    </div>
+  );
+
   return (
-    <div style={containerStyle}>
+    <div style={styles.container}>
       {/* Header */}
-      <div style={headerStyle}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: isMobile ? '1rem' : '1.5rem'
-        }}>
-          <div style={{display: 'flex', alignItems: 'center'}}>
+      <div style={styles.header}>
+        <div style={styles.headerContent}>
+          <div style={styles.headerLeft}>
             <button
               onClick={() => navigate('/menu')}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '0.5rem',
-                marginRight: '1rem',
-                cursor: 'pointer',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                color: '#64748b'
-              }}
+              style={styles.backButton}
             >
               <ArrowLeft size={24} />
             </button>
             
             <div>
-              <h1 style={{
-                fontSize: isMobile ? '1.5rem' : '2rem',
-                fontWeight: 'bold',
-                color: '#1e293b',
-                margin: 0,
-                lineHeight: '1.2'
-              }}>
+              <h1 style={styles.headerTitle}>
                 Análisis Prospectivo
               </h1>
-              <p style={{
-                color: '#64748b',
-                fontSize: isMobile ? '0.9rem' : '1rem',
-                margin: '0.25rem 0 0 0'
-              }}>
+              <p style={styles.headerSubtitle}>
                 Selecciona el tipo de análisis que deseas realizar
               </p>
             </div>
           </div>
 
-          <div style={{display: 'flex', gap: '0.5rem'}}>
+          <div style={styles.headerActions}>
             <button
               onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-              style={{
-                background: '#f1f5f9',
-                border: 'none',
-                padding: '0.75rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                color: '#64748b'
-              }}
+              style={styles.viewModeButton}
             >
               {viewMode === 'grid' ? <List size={20} /> : <Grid3X3 size={20} />}
             </button>
@@ -376,50 +516,24 @@ const AnalysisScreen: React.FC = () => {
         </div>
 
         {/* Barra de búsqueda y filtros */}
-        <div style={{
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: '1rem',
-          alignItems: isMobile ? 'stretch' : 'center'
-        }}>
-          <div style={{position: 'relative', flex: 1}}>
-            <Search size={20} style={{
-              position: 'absolute',
-              left: '1rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: '#9ca3af'
-            }} />
+        <div style={styles.searchFilterContainer}>
+          <div style={styles.searchContainer}>
+            <Search size={20} style={styles.searchIcon} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={searchBarStyle}
+              style={styles.searchInput}
               placeholder="Buscar tipo de análisis..."
             />
           </div>
 
-          <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
-            {[
-              { key: 'all', label: 'Todos' },
-              { key: 'popular', label: 'Populares' },
-              { key: 'new', label: 'Nuevos' },
-              { key: 'basic', label: 'Básicos' }
-            ].map(filter => (
+          <div style={styles.filterContainer}>
+            {filterOptions.map(filter => (
               <button
                 key={filter.key}
                 onClick={() => setSelectedFilter(filter.key as any)}
-                style={{
-                  background: selectedFilter === filter.key ? '#4c1d95' : '#f1f5f9',
-                  color: selectedFilter === filter.key ? 'white' : '#64748b',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '20px',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  transition: 'all 0.3s ease'
-                }}
+                style={styles.filterButton(selectedFilter === filter.key)}
               >
                 {filter.label}
               </button>
@@ -428,19 +542,8 @@ const AnalysisScreen: React.FC = () => {
         </div>
 
         {selectedCategory && (
-          <div style={{
-            marginTop: '1rem',
-            padding: '0.75rem 1rem',
-            background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
-            borderRadius: '12px',
-            border: `2px solid ${selectedCategory.color}20`
-          }}>
-            <p style={{
-              color: '#0369a1',
-              fontSize: '0.9rem',
-              margin: 0,
-              fontWeight: '500'
-            }}>
+          <div style={styles.selectedCategoryBanner(selectedCategory.color)}>
+            <p style={styles.selectedCategoryText}>
               💡 Llegaste desde: <strong>{selectedCategory.name}</strong>
             </p>
           </div>
@@ -448,421 +551,11 @@ const AnalysisScreen: React.FC = () => {
       </div>
 
       {/* Contenido */}
-      <div style={contentStyle}>
-        {viewMode === 'grid' ? (
-          // Vista en grilla
-          <div>
-            {categoryGroups.map((group, groupIndex) => (
-              <div key={groupIndex} style={{marginBottom: '2.5rem'}}>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 'bold',
-                  color: '#1e293b',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}>
-                  {group.title}
-                  <span style={{
-                    background: '#e2e8f0',
-                    color: '#64748b',
-                    fontSize: '0.75rem',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '12px',
-                    marginLeft: '0.75rem',
-                    fontWeight: '600'
-                  }}>
-                    {group.categories.length}
-                  </span>
-                </h2>
-
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: isMobile 
-                    ? '1fr' 
-                    : 'repeat(auto-fit, minmax(350px, 1fr))',
-                  gap: '1.5rem'
-                }}>
-                  {group.categories
-                    .filter(cat => filteredCategories.includes(cat))
-                    .map(category => {
-                      const Icon = category.icon;
-                      return (
-                        <div
-                          key={category.id}
-                          style={{
-                            ...cardStyle,
-                            opacity: category.isComingSoon ? 0.7 : 1,
-                            position: 'relative'
-                          }}
-                          onClick={() => handleCategorySelect(category)}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-4px)';
-                            e.currentTarget.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                          }}
-                        >
-                          {category.isNew && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '1rem',
-                              right: '1rem',
-                              background: '#10b981',
-                              color: 'white',
-                              fontSize: '0.7rem',
-                              padding: '0.25rem 0.5rem',
-                              borderRadius: '12px',
-                              fontWeight: '600'
-                            }}>
-                              NUEVO
-                            </div>
-                          )}
-                          
-                          {category.isComingSoon && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '1rem',
-                              right: '1rem',
-                              background: '#f59e0b',
-                              color: 'white',
-                              fontSize: '0.7rem',
-                              padding: '0.25rem 0.5rem',
-                              borderRadius: '12px',
-                              fontWeight: '600'
-                            }}>
-                              PRÓXIMAMENTE
-                            </div>
-                          )}
-
-                          <div style={{display: 'flex', alignItems: 'flex-start', marginBottom: '1rem'}}>
-                            <div style={{
-                              width: '60px',
-                              height: '60px',
-                              borderRadius: '16px',
-                              background: `linear-gradient(135deg, ${category.color}, ${category.color}CC)`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              marginRight: '1rem',
-                              boxShadow: `0 4px 12px ${category.color}30`
-                            }}>
-                              <Icon size={28} color="white" />
-                            </div>
-
-                            <div style={{flex: 1}}>
-                              <h3 style={{
-                                fontSize: '1.2rem',
-                                fontWeight: 'bold',
-                                color: '#1e293b',
-                                margin: '0 0 0.5rem 0',
-                                lineHeight: '1.3'
-                              }}>
-                                {category.name}
-                              </h3>
-                              
-                              <p style={{
-                                color: '#64748b',
-                                fontSize: '0.9rem',
-                                margin: '0 0 1rem 0',
-                                lineHeight: '1.5'
-                              }}>
-                                {category.description}
-                              </p>
-
-                              <div style={{
-                                display: 'flex',
-                                gap: '0.75rem',
-                                flexWrap: 'wrap',
-                                alignItems: 'center'
-                              }}>
-                                <div style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  background: '#f1f5f9',
-                                  padding: '0.25rem 0.5rem',
-                                  borderRadius: '8px',
-                                  fontSize: '0.75rem',
-                                  fontWeight: '500'
-                                }}>
-                                  <div style={{
-                                    width: '6px',
-                                    height: '6px',
-                                    borderRadius: '50%',
-                                    background: getDifficultyColor(category.difficulty),
-                                    marginRight: '0.5rem'
-                                  }}></div>
-                                  {category.difficulty}
-                                </div>
-
-                                <div style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  color: '#64748b',
-                                  fontSize: '0.75rem'
-                                }}>
-                                  <Clock size={14} style={{marginRight: '0.25rem'}} />
-                                  {category.estimatedTime}
-                                </div>
-
-                                <div style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  color: '#64748b',
-                                  fontSize: '0.75rem'
-                                }}>
-                                  <Star size={14} style={{marginRight: '0.25rem'}} />
-                                  {category.popularity}%
-                                </div>
-                              </div>
-                            </div>
-
-                            <ChevronRight size={20} color="#cbd5e1" />
-                          </div>
-
-                          <div style={{
-                            padding: '1rem',
-                            background: '#f8fafc',
-                            borderRadius: '12px',
-                            marginTop: '1rem'
-                          }}>
-                            <p style={{
-                              color: '#475569',
-                              fontSize: '0.85rem',
-                              margin: '0',
-                              lineHeight: '1.4'
-                            }}>
-                              {category.longDescription}
-                            </p>
-                          </div>
-
-                          {!category.isComingSoon && (
-                            <div style={{
-                              display: 'flex',
-                              justifyContent: 'flex-end',
-                              marginTop: '1rem'
-                            }}>
-                              <button style={{
-                                background: category.color,
-                                color: 'white',
-                                border: 'none',
-                                padding: '0.5rem 1rem',
-                                borderRadius: '8px',
-                                fontSize: '0.875rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                transition: 'transform 0.2s ease'
-                              }}>
-                                <Play size={16} />
-                                Comenzar Análisis
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          // Vista en lista
-          <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-            {filteredCategories.map(category => {
-              const Icon = category.icon;
-              return (
-                <div
-                  key={category.id}
-                  style={{
-                    ...cardStyle,
-                    padding: '1.25rem',
-                    opacity: category.isComingSoon ? 0.7 : 1
-                  }}
-                  onClick={() => handleCategorySelect(category)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateX(4px)';
-                    e.currentTarget.style.boxShadow = '0 8px 25px -3px rgba(0, 0, 0, 0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateX(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                  }}
-                >
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem'
-                  }}>
-                    <div style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '12px',
-                      background: category.color,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <Icon size={24} color="white" />
-                    </div>
-
-                    <div style={{flex: 1}}>
-                      <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem'}}>
-                        <h3 style={{
-                          fontSize: '1.1rem',
-                          fontWeight: 'bold',
-                          color: '#1e293b',
-                          margin: 0
-                        }}>
-                          {category.name}
-                        </h3>
-                        
-                        {category.isNew && (
-                          <span style={{
-                            background: '#10b981',
-                            color: 'white',
-                            fontSize: '0.7rem',
-                            padding: '0.2rem 0.5rem',
-                            borderRadius: '10px',
-                            fontWeight: '600'
-                          }}>
-                            NUEVO
-                          </span>
-                        )}
-                        
-                        {category.isComingSoon && (
-                          <span style={{
-                            background: '#f59e0b',
-                            color: 'white',
-                            fontSize: '0.7rem',
-                            padding: '0.2rem 0.5rem',
-                            borderRadius: '10px',
-                            fontWeight: '600'
-                          }}>
-                            PRÓXIMAMENTE
-                          </span>
-                        )}
-                      </div>
-
-                      <p style={{
-                        color: '#64748b',
-                        fontSize: '0.9rem',
-                        margin: '0 0 0.75rem 0'
-                      }}>
-                        {category.description}
-                      </p>
-
-                      <div style={{
-                        display: 'flex',
-                        gap: '1rem',
-                        alignItems: 'center',
-                        fontSize: '0.8rem',
-                        color: '#64748b'
-                      }}>
-                        <div style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
-                          <div style={{
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: getDifficultyColor(category.difficulty)
-                          }}></div>
-                          {category.difficulty}
-                        </div>
-                        
-                        <div style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
-                          <Clock size={12} />
-                          {category.estimatedTime}
-                        </div>
-                        
-                        <div style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
-                          <Star size={12} />
-                          {category.popularity}%
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem'
-                    }}>
-                      {!category.isComingSoon && (
-                        <button style={{
-                          background: category.color,
-                          color: 'white',
-                          border: 'none',
-                          padding: '0.5rem 1rem',
-                          borderRadius: '8px',
-                          fontSize: '0.8rem',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem'
-                        }}>
-                          <Play size={14} />
-                          Comenzar
-                        </button>
-                      )}
-                      <ChevronRight size={20} color="#cbd5e1" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {filteredCategories.length === 0 && (
-          <div style={{
-            textAlign: 'center',
-            padding: '3rem 1rem',
-            color: '#64748b'
-          }}>
-            <div style={{
-              fontSize: '3rem',
-              marginBottom: '1rem',
-              opacity: 0.5
-            }}>
-              🔍
-            </div>
-            <h3 style={{
-              fontSize: '1.2rem',
-              fontWeight: '600',
-              marginBottom: '0.5rem',
-              color: '#374151'
-            }}>
-              No se encontraron resultados
-            </h3>
-            <p style={{fontSize: '0.9rem'}}>
-              Intenta con otros términos de búsqueda o cambia los filtros
-            </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedFilter('all');
-              }}
-              style={{
-                background: '#4c1d95',
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                fontSize: '0.9rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                marginTop: '1rem'
-              }}
-            >
-              Limpiar filtros
-            </button>
-          </div>
-        )}
+      <div style={styles.content}>
+        {filteredCategories.length === 0 ? 
+          renderEmptyState() : 
+          (viewMode === 'grid' ? renderGridView() : renderListView())
+        }
       </div>
     </div>
   );

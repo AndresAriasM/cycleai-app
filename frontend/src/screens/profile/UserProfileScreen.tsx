@@ -1,5 +1,5 @@
-// src/screens/profile/UserProfileScreen.tsx
-import React, { useState, useRef } from 'react';
+// src/screens/profile/UserProfileScreen.tsx - OPTIMIZADO
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -12,42 +12,46 @@ import {
   Phone,
   MapPin,
   Briefcase,
-  //Calendar,
   CreditCard,
   Bell,
   Shield,
   Download,
-  //Upload,
-  Trash2,
-  //Eye,
-  //EyeOff
+  Trash2
 } from 'lucide-react';
 import UserAvatar from '../../components/common/UserAvatar';
-
-interface UserProfile {
-  id: string;
-  username: string;
-  email: string;
-  name: string;
-  lastName: string;
-  role: string;
-  avatar?: string;
-  phone?: string;
-  address?: string;
-  bio?: string;
-  joinDate: string;
-  subscription: 'free' | 'pro' | 'enterprise';
-  notifications: {
-    email: boolean;
-    push: boolean;
-    marketing: boolean;
-  };
-}
+import { 
+  createUserProfileScreenStyles,
+  getSubscriptionColor,
+  getSubscriptionFeatures,
+  validatePassword,
+  validateEmail,
+  tabsConfig
+} from '../../styles/profile/UserProfileScreenStyles';
+import type { 
+  UserProfile, 
+  Passwords, 
+  TabType 
+} from '../../styles/profile/UserProfileScreenStyles';
 
 const UserProfileScreen: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [hoveredElement, setHoveredElement] = useState<string | null>(null);
+
+  // Crear estilos basados en si es móvil o no
+  const styles = createUserProfileScreenStyles(isMobile);
+
+  // Detectar cambios de tamaño de pantalla
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [currentUser, setCurrentUser] = useState<UserProfile>({
     id: '1',
     username: 'sergio',
@@ -69,9 +73,9 @@ const UserProfileScreen: React.FC = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserProfile>({ ...currentUser });
-  const [activeTab, setActiveTab] = useState<'personal' | 'subscription' | 'preferences' | 'documents'>('personal');
+  const [activeTab, setActiveTab] = useState<TabType>('personal');
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [passwords, setPasswords] = useState({
+  const [passwords, setPasswords] = useState<Passwords>({
     current: '',
     new: '',
     confirm: ''
@@ -87,10 +91,15 @@ const UserProfileScreen: React.FC = () => {
     '/src/assets/users/sofia.jpg'
   ];
 
+  // Handlers
   const handleSave = () => {
+    if (!validateEmail(editedUser.email)) {
+      alert('Por favor ingresa un email válido');
+      return;
+    }
+    
     setCurrentUser({ ...editedUser });
     setIsEditing(false);
-    // Aquí guardarías en localStorage o API
     localStorage.setItem('cycleai_current_user', JSON.stringify(editedUser));
   };
 
@@ -117,74 +126,142 @@ const UserProfileScreen: React.FC = () => {
     }
   };
 
+  const handlePasswordUpdate = () => {
+    if (!validatePassword(passwords.new)) {
+      alert('La nueva contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+    
+    if (passwords.new !== passwords.confirm) {
+      alert('Las contraseñas no coinciden');
+      return;
+    }
+    
+    // Aquí iría la lógica de actualización de contraseña
+    alert('Contraseña actualizada exitosamente');
+    setPasswords({ current: '', new: '', confirm: '' });
+    setShowChangePassword(false);
+  };
+
+  const handleNotificationToggle = (key: keyof UserProfile['notifications']) => {
+    setCurrentUser({
+      ...currentUser,
+      notifications: {
+        ...currentUser.notifications,
+        [key]: !currentUser.notifications[key]
+      }
+    });
+  };
+
   const user = isEditing ? editedUser : currentUser;
 
-  // Estilos
-  const containerStyle: React.CSSProperties = {
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 25%, #3730a3 50%, #1e40af 75%, #1e3a8a 100%)',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-  };
+  // Componentes
+  const Header = () => (
+    <div style={styles.header}>
+      <div 
+        style={{
+          ...styles.backButton,
+          ...(hoveredElement === 'back' ? styles.backButtonHover : {})
+        }}
+        onClick={() => navigate('/menu')}
+        onMouseEnter={() => setHoveredElement('back')}
+        onMouseLeave={() => setHoveredElement(null)}
+      >
+        <ArrowLeft size={20} />
+        Volver
+      </div>
 
-  const headerStyle: React.CSSProperties = {
-    padding: '2rem 1rem 1rem',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    maxWidth: '900px',
-    margin: '0 auto'
-  };
+      <div style={styles.headerActions}>
+        {isEditing ? (
+          <>
+            <button
+              style={{
+                ...styles.saveButton,
+                ...(hoveredElement === 'save' ? styles.saveButtonHover : {})
+              }}
+              onClick={handleSave}
+              onMouseEnter={() => setHoveredElement('save')}
+              onMouseLeave={() => setHoveredElement(null)}
+            >
+              <Save size={18} />
+              Guardar
+            </button>
+            
+            <button
+              style={{
+                ...styles.cancelButton,
+                ...(hoveredElement === 'cancel' ? styles.cancelButtonHover : {})
+              }}
+              onClick={handleCancel}
+              onMouseEnter={() => setHoveredElement('cancel')}
+              onMouseLeave={() => setHoveredElement(null)}
+            >
+              <X size={18} />
+              Cancelar
+            </button>
+          </>
+        ) : (
+          <button
+            style={{
+              ...styles.editButton,
+              ...(hoveredElement === 'edit' ? styles.editButtonHover : {})
+            }}
+            onClick={() => setIsEditing(true)}
+            onMouseEnter={() => setHoveredElement('edit')}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
+            <Edit size={18} />
+            {isMobile ? 'Editar' : 'Editar perfil'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
-  const contentStyle: React.CSSProperties = {
-    padding: '0 1rem 2rem',
-    maxWidth: '900px',
-    margin: '0 auto'
-  };
+  const FormField: React.FC<{
+    label: string;
+    icon: React.ElementType;
+    value: string;
+    onChange: (value: string) => void;
+    type?: string;
+    placeholder?: string;
+    isTextarea?: boolean;
+  }> = ({ label, icon: Icon, value, onChange, type = 'text', placeholder, isTextarea = false }) => (
+    <div style={styles.formField}>
+      <label style={styles.formLabel}>
+        <Icon size={16} />
+        {label}
+      </label>
+      {isTextarea ? (
+        <textarea
+          value={value}
+          onChange={(e) => isEditing && onChange(e.target.value)}
+          style={styles.formTextarea(isEditing)}
+          placeholder={placeholder}
+          readOnly={!isEditing}
+          onFocus={(e) => isEditing && (e.target.style.borderColor = '#06b6d4')}
+          onBlur={(e) => isEditing && (e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)')}
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => isEditing && onChange(e.target.value)}
+          style={styles.formInput(isEditing)}
+          placeholder={placeholder}
+          readOnly={!isEditing}
+          onFocus={(e) => isEditing && (e.target.style.borderColor = '#06b6d4')}
+          onBlur={(e) => isEditing && (e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)')}
+        />
+      )}
+    </div>
+  );
 
-  const cardStyle: React.CSSProperties = {
-    background: 'rgba(15, 23, 42, 0.8)',
-    backdropFilter: 'blur(25px)',
-    borderRadius: '24px',
-    border: '2px solid rgba(99, 102, 241, 0.4)',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)',
-    overflow: 'hidden'
-  };
-
-  const tabStyle = (active: boolean): React.CSSProperties => ({
-    padding: '1rem 2rem',
-    background: active ? 'rgba(6, 182, 212, 0.2)' : 'transparent',
-    color: active ? '#67e8f9' : 'rgba(255, 255, 255, 0.7)',
-    border: 'none',
-    cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '0.95rem',
-    transition: 'all 0.3s ease',
-    borderRadius: '12px'
-  });
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '0.875rem 1rem',
-    background: isEditing ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.1)',
-    border: '2px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '12px',
-    color: isEditing ? '#1e293b' : 'white',
-    fontSize: '1rem',
-    outline: 'none',
-    cursor: isEditing ? 'text' : 'default'
-  };
-
-  const renderPersonalTab = () => (
-    <div style={{ padding: '2rem' }}>
+  const PersonalTab = () => (
+    <div style={{ padding: isMobile ? '1.5rem' : '2rem' }}>
       {/* Avatar Section */}
-      <div style={{ 
-        textAlign: 'center', 
-        marginBottom: '3rem',
-        background: 'rgba(255, 255, 255, 0.05)',
-        borderRadius: '20px',
-        padding: '2rem'
-      }}>
-        <div style={{ position: 'relative', display: 'inline-block' }}>
+      <div style={styles.avatarSection}>
+        <div style={styles.avatarContainer}>
           <UserAvatar 
             name={`${user.name} ${user.lastName}`}
             avatar={user.avatar}
@@ -194,24 +271,15 @@ const UserProfileScreen: React.FC = () => {
           />
           {isEditing && (
             <button
-              onClick={() => fileInputRef.current?.click()}
               style={{
-                position: 'absolute',
-                bottom: '0',
-                right: '0',
-                background: '#06b6d4',
-                border: 'none',
-                borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)'
+                ...styles.avatarEditButton,
+                ...(hoveredElement === 'avatar-edit' ? styles.avatarEditButtonHover : {})
               }}
+              onClick={() => fileInputRef.current?.click()}
+              onMouseEnter={() => setHoveredElement('avatar-edit')}
+              onMouseLeave={() => setHoveredElement(null)}
             >
-              <Camera size={20} color="white" />
+              <Camera size={isMobile ? 16 : 20} color="white" />
             </button>
           )}
           <input
@@ -223,34 +291,22 @@ const UserProfileScreen: React.FC = () => {
           />
         </div>
         
-        <h2 style={{
-          color: 'white',
-          fontSize: '2rem',
-          fontWeight: 'bold',
-          margin: '1rem 0 0.5rem',
-          textAlign: 'center'
-        }}>
+        <h2 style={styles.userTitle}>
           {user.name} {user.lastName}
         </h2>
         
-        <p style={{
-          color: 'rgba(255, 255, 255, 0.7)',
-          fontSize: '1.1rem',
-          textAlign: 'center'
-        }}>
+        <p style={styles.userSubtitle}>
           {user.role}
         </p>
 
         {isEditing && (
-          <div style={{
-            marginTop: '1.5rem',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
-            gap: '1rem',
-            maxWidth: '400px',
-            margin: '1.5rem auto 0'
-          }}>
-            <div style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', gridColumn: '1 / -1' }}>
+          <div style={styles.avatarGrid}>
+            <div style={{ 
+              color: 'white', 
+              fontSize: isMobile ? '0.8rem' : '0.9rem', 
+              marginBottom: '0.5rem', 
+              gridColumn: '1 / -1' 
+            }}>
               Avatares disponibles:
             </div>
             {availableAvatars.map((avatar, index) => (
@@ -258,26 +314,16 @@ const UserProfileScreen: React.FC = () => {
                 key={index}
                 onClick={() => handleAvatarChange(avatar)}
                 style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  border: user.avatar === avatar ? '3px solid #06b6d4' : '2px solid rgba(255, 255, 255, 0.3)',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                  ...styles.avatarOption(user.avatar === avatar),
+                  ...(hoveredElement === `avatar-${index}` ? styles.avatarOptionHover : {})
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseEnter={() => setHoveredElement(`avatar-${index}`)}
+                onMouseLeave={() => setHoveredElement(null)}
               >
                 <img
                   src={avatar}
                   alt={`Avatar ${index + 1}`}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover'
-                  }}
+                  style={styles.avatarImage}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=avatar${index}`;
@@ -290,201 +336,105 @@ const UserProfileScreen: React.FC = () => {
       </div>
 
       {/* Form Fields */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '1.5rem'
-      }}>
-        <div>
-          <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-            <User size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
-            Nombre
-          </label>
-          <input
-            type="text"
-            value={user.name}
-            onChange={(e) => isEditing && setEditedUser({ ...editedUser, name: e.target.value })}
-            style={inputStyle}
-            readOnly={!isEditing}
-          />
-        </div>
+      <div style={styles.formGrid}>
+        <FormField
+          label="Nombre"
+          icon={User}
+          value={user.name}
+          onChange={(value) => setEditedUser({ ...editedUser, name: value })}
+        />
 
-        <div>
-          <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-            <User size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
-            Apellido
-          </label>
-          <input
-            type="text"
-            value={user.lastName}
-            onChange={(e) => isEditing && setEditedUser({ ...editedUser, lastName: e.target.value })}
-            style={inputStyle}
-            readOnly={!isEditing}
-          />
-        </div>
+        <FormField
+          label="Apellido"
+          icon={User}
+          value={user.lastName}
+          onChange={(value) => setEditedUser({ ...editedUser, lastName: value })}
+        />
 
-        <div>
-          <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-            <Mail size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
-            Email
-          </label>
-          <input
-            type="email"
-            value={user.email}
-            onChange={(e) => isEditing && setEditedUser({ ...editedUser, email: e.target.value })}
-            style={inputStyle}
-            readOnly={!isEditing}
-          />
-        </div>
+        <FormField
+          label="Email"
+          icon={Mail}
+          type="email"
+          value={user.email}
+          onChange={(value) => setEditedUser({ ...editedUser, email: value })}
+        />
 
-        <div>
-          <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-            <Phone size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
-            Teléfono
-          </label>
-          <input
-            type="tel"
-            value={user.phone || ''}
-            onChange={(e) => isEditing && setEditedUser({ ...editedUser, phone: e.target.value })}
-            style={inputStyle}
-            placeholder="Número de teléfono"
-            readOnly={!isEditing}
-          />
-        </div>
+        <FormField
+          label="Teléfono"
+          icon={Phone}
+          type="tel"
+          value={user.phone || ''}
+          onChange={(value) => setEditedUser({ ...editedUser, phone: value })}
+          placeholder="Número de teléfono"
+        />
 
-        <div>
-          <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-            <Briefcase size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
-            Rol
-          </label>
-          <input
-            type="text"
-            value={user.role}
-            onChange={(e) => isEditing && setEditedUser({ ...editedUser, role: e.target.value })}
-            style={inputStyle}
-            readOnly={!isEditing}
-          />
-        </div>
+        <FormField
+          label="Rol"
+          icon={Briefcase}
+          value={user.role}
+          onChange={(value) => setEditedUser({ ...editedUser, role: value })}
+        />
 
-        <div>
-          <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-            <MapPin size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
-            Dirección
-          </label>
-          <input
-            type="text"
-            value={user.address || ''}
-            onChange={(e) => isEditing && setEditedUser({ ...editedUser, address: e.target.value })}
-            style={inputStyle}
-            placeholder="Ciudad, País"
-            readOnly={!isEditing}
-          />
-        </div>
-      </div>
-
-      <div style={{ marginTop: '1.5rem' }}>
-        <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-          <Edit size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
-          Biografía
-        </label>
-        <textarea
-          value={user.bio || ''}
-          onChange={(e) => isEditing && setEditedUser({ ...editedUser, bio: e.target.value })}
-          style={{
-            ...inputStyle,
-            minHeight: '100px',
-            resize: 'vertical'
-          }}
-          placeholder="Cuéntanos sobre ti..."
-          readOnly={!isEditing}
+        <FormField
+          label="Dirección"
+          icon={MapPin}
+          value={user.address || ''}
+          onChange={(value) => setEditedUser({ ...editedUser, address: value })}
+          placeholder="Ciudad, País"
         />
       </div>
 
+      <FormField
+        label="Biografía"
+        icon={Edit}
+        value={user.bio || ''}
+        onChange={(value) => setEditedUser({ ...editedUser, bio: value })}
+        placeholder="Cuéntanos sobre ti..."
+        isTextarea
+      />
+
       {/* Change Password */}
-      <div style={{ marginTop: '2rem' }}>
+      <div style={styles.passwordSection}>
         <button
-          onClick={() => setShowChangePassword(!showChangePassword)}
           style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
-            color: 'white',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
+            ...styles.passwordButton,
+            ...(hoveredElement === 'password-toggle' ? styles.passwordButtonHover : {})
           }}
+          onClick={() => setShowChangePassword(!showChangePassword)}
+          onMouseEnter={() => setHoveredElement('password-toggle')}
+          onMouseLeave={() => setHoveredElement(null)}
         >
           <Shield size={18} />
           Cambiar contraseña
         </button>
 
         {showChangePassword && (
-          <div style={{
-            marginTop: '1rem',
-            background: 'rgba(255, 255, 255, 0.05)',
-            padding: '1.5rem',
-            borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.1)'
-          }}>
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-                  Contraseña actual
-                </label>
-                <input
-                  type="password"
-                  value={passwords.current}
-                  onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                  style={{
-                    ...inputStyle,
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    color: '#1e293b'
-                  }}
-                />
-              </div>
-              <div>
-                <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-                  Nueva contraseña
-                </label>
-                <input
-                  type="password"
-                  value={passwords.new}
-                  onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                  style={{
-                    ...inputStyle,
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    color: '#1e293b'
-                  }}
-                />
-              </div>
-              <div>
-                <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-                  Confirmar nueva contraseña
-                </label>
-                <input
-                  type="password"
-                  value={passwords.confirm}
-                  onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                  style={{
-                    ...inputStyle,
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    color: '#1e293b'
-                  }}
-                />
-              </div>
+          <div style={styles.passwordForm}>
+            <div style={styles.passwordGrid}>
+              <FormField
+                label="Contraseña actual"
+                icon={Shield}
+                type="password"
+                value={passwords.current}
+                onChange={(value) => setPasswords({ ...passwords, current: value })}
+              />
+              <FormField
+                label="Nueva contraseña"
+                icon={Shield}
+                type="password"
+                value={passwords.new}
+                onChange={(value) => setPasswords({ ...passwords, new: value })}
+              />
+              <FormField
+                label="Confirmar nueva contraseña"
+                icon={Shield}
+                type="password"
+                value={passwords.confirm}
+                onChange={(value) => setPasswords({ ...passwords, confirm: value })}
+              />
               <button
-                style={{
-                  background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-                  border: 'none',
-                  color: 'white',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  fontWeight: '600'
-                }}
+                onClick={handlePasswordUpdate}
+                style={styles.passwordUpdateButton}
               >
                 Actualizar contraseña
               </button>
@@ -495,243 +445,229 @@ const UserProfileScreen: React.FC = () => {
     </div>
   );
 
-  const renderSubscriptionTab = () => (
-    <div style={{ padding: '2rem' }}>
-      <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '1.5rem' }}>
-        <CreditCard size={24} style={{ display: 'inline', marginRight: '0.5rem' }} />
-        Suscripción y Facturación
-      </h3>
-
-      {/* Current Plan */}
-      <div style={{
-        background: 'rgba(6, 182, 212, 0.2)',
-        border: '2px solid rgba(6, 182, 212, 0.4)',
-        borderRadius: '16px',
-        padding: '2rem',
-        marginBottom: '2rem'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h4 style={{ color: 'white', fontSize: '1.3rem', margin: 0 }}>Plan Actual: Pro</h4>
-          <div style={{
-            background: '#10b981',
-            color: 'white',
-            padding: '0.5rem 1rem',
-            borderRadius: '20px',
-            fontSize: '0.875rem',
-            fontWeight: '600'
-          }}>
-            Activo
-          </div>
-        </div>
-        
-        <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '1rem' }}>
-          Acceso completo a todas las herramientas de análisis y 500 créditos mensuales.
-        </p>
-        
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <div style={{ color: 'white', fontSize: '0.9rem' }}>
-            ✓ 500 créditos de análisis/mes
-          </div>
-          <div style={{ color: 'white', fontSize: '0.9rem' }}>
-            ✓ 200 créditos de IA/mes
-          </div>
-          <div style={{ color: 'white', fontSize: '0.9rem' }}>
-            ✓ Soporte prioritario
-          </div>
-        </div>
-        
-        <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
-          <button style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
-            color: 'white',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}>
-            Cambiar plan
-          </button>
-          <button style={{
-            background: 'transparent',
-            border: '2px solid rgba(239, 68, 68, 0.5)',
-            color: '#f87171',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}>
-            Cancelar suscripción
-          </button>
-        </div>
-      </div>
-
-      {/* Payment Method */}
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        borderRadius: '16px',
-        padding: '1.5rem',
-        marginBottom: '2rem'
-      }}>
-        <h4 style={{ color: 'white', fontSize: '1.1rem', marginBottom: '1rem' }}>
-          Método de pago
-        </h4>
-        <div style={{
+  const SubscriptionTab = () => {
+    const subscriptionFeatures = getSubscriptionFeatures(currentUser.subscription);
+    
+    return (
+      <div style={{ padding: isMobile ? '1.5rem' : '2rem' }}>
+        <h3 style={{ 
+          color: 'white', 
+          fontSize: isMobile ? '1.25rem' : '1.5rem', 
+          marginBottom: '1.5rem',
           display: 'flex',
           alignItems: 'center',
-          background: 'rgba(255, 255, 255, 0.1)',
-          padding: '1rem',
-          borderRadius: '12px'
+          gap: '0.5rem'
         }}>
-          <CreditCard size={24} color="#06b6d4" style={{ marginRight: '1rem' }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ color: 'white', fontWeight: '600' }}>•••• •••• •••• 4567</div>
-            <div style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.875rem' }}>Vence 12/2027</div>
-          </div>
-          <button style={{
-            background: 'none',
-            border: 'none',
-            color: '#06b6d4',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}>
-            Cambiar
-          </button>
-        </div>
-      </div>
+          <CreditCard size={24} />
+          Suscripción y Facturación
+        </h3>
 
-      {/* Billing History */}
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        borderRadius: '16px',
-        padding: '1.5rem'
-      }}>
-        <h4 style={{ color: 'white', fontSize: '1.1rem', marginBottom: '1rem' }}>
-          Historial de facturación
-        </h4>
-        {[
-          { date: 'Ago 2024', amount: '$29.99', status: 'Pagado' },
-          { date: 'Jul 2024', amount: '$29.99', status: 'Pagado' },
-          { date: 'Jun 2024', amount: '$29.99', status: 'Pagado' }
-        ].map((invoice, index) => (
-          <div key={index} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '0.75rem 0',
-            borderBottom: index < 2 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
-          }}>
-            <div style={{ color: 'white' }}>{invoice.date}</div>
-            <div style={{ color: 'white', fontWeight: '600' }}>{invoice.amount}</div>
-            <div style={{ color: '#10b981', fontSize: '0.875rem' }}>{invoice.status}</div>
-            <button style={{
-              background: 'none',
-              border: 'none',
-              color: '#06b6d4',
-              cursor: 'pointer',
-              fontSize: '0.875rem'
+        {/* Current Plan */}
+        <div style={styles.subscriptionCard}>
+          <div style={styles.subscriptionHeader}>
+            <h4 style={{ 
+              color: 'white', 
+              fontSize: isMobile ? '1.1rem' : '1.3rem', 
+              margin: 0 
             }}>
-              <Download size={16} style={{ marginRight: '0.25rem' }} />
-              PDF
+              Plan Actual: {currentUser.subscription.charAt(0).toUpperCase() + currentUser.subscription.slice(1)}
+            </h4>
+            <div style={styles.subscriptionBadge}>
+              Activo
+            </div>
+          </div>
+          
+          <p style={{ 
+            color: 'rgba(255, 255, 255, 0.8)', 
+            marginBottom: '1rem',
+            fontSize: isMobile ? '0.9rem' : '1rem'
+          }}>
+            Acceso completo a todas las herramientas de análisis y 500 créditos mensuales.
+          </p>
+          
+          <div style={styles.subscriptionFeatures}>
+            {subscriptionFeatures.map((feature, index) => (
+              <div key={index} style={{ 
+                color: 'white', 
+                fontSize: isMobile ? '0.85rem' : '0.9rem' 
+              }}>
+                ✓ {feature}
+              </div>
+            ))}
+          </div>
+          
+          <div style={styles.subscriptionActions}>
+            <button 
+              style={{
+                ...styles.subscriptionButton('primary'),
+                ...(hoveredElement === 'change-plan' ? styles.subscriptionButtonHover('primary') : {})
+              }}
+              onMouseEnter={() => setHoveredElement('change-plan')}
+              onMouseLeave={() => setHoveredElement(null)}
+            >
+              Cambiar plan
+            </button>
+            <button 
+              style={{
+                ...styles.subscriptionButton('danger'),
+                ...(hoveredElement === 'cancel-sub' ? styles.subscriptionButtonHover('danger') : {})
+              }}
+              onMouseEnter={() => setHoveredElement('cancel-sub')}
+              onMouseLeave={() => setHoveredElement(null)}
+            >
+              Cancelar suscripción
             </button>
           </div>
-        ))}
-      </div>
-    </div>
-  );
+        </div>
 
-  const renderPreferencesTab = () => (
-    <div style={{ padding: '2rem' }}>
-      <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '1.5rem' }}>
-        <Bell size={24} style={{ display: 'inline', marginRight: '0.5rem' }} />
+        {/* Payment Method */}
+        <div style={styles.paymentMethod}>
+          <h4 style={{ 
+            color: 'white', 
+            fontSize: isMobile ? '1rem' : '1.1rem', 
+            marginBottom: '1rem' 
+          }}>
+            Método de pago
+          </h4>
+          <div style={styles.paymentMethodContent}>
+            <CreditCard size={24} color="#06b6d4" style={{ marginRight: isMobile ? '0' : '1rem' }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ color: 'white', fontWeight: '600' }}>•••• •••• •••• 4567</div>
+              <div style={{ 
+                color: 'rgba(255, 255, 255, 0.6)', 
+                fontSize: isMobile ? '0.8rem' : '0.875rem' 
+              }}>
+                Vence 12/2027
+              </div>
+            </div>
+            <button style={styles.paymentMethodButton}>
+              Cambiar
+            </button>
+          </div>
+        </div>
+
+        {/* Billing History */}
+        <div style={styles.billingHistory}>
+          <h4 style={{ 
+            color: 'white', 
+            fontSize: isMobile ? '1rem' : '1.1rem', 
+            marginBottom: '1rem' 
+          }}>
+            Historial de facturación
+          </h4>
+          {[
+            { date: 'Ago 2024', amount: '$29.99', status: 'Pagado' },
+            { date: 'Jul 2024', amount: '$29.99', status: 'Pagado' },
+            { date: 'Jun 2024', amount: '$29.99', status: 'Pagado' }
+          ].map((invoice, index) => (
+            <div key={index} style={{
+              ...styles.billingItem,
+              borderBottom: index < 2 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
+            }}>
+              <div style={{ color: 'white' }}>{invoice.date}</div>
+              <div style={{ color: 'white', fontWeight: '600' }}>{invoice.amount}</div>
+              <div style={{ 
+                color: '#10b981', 
+                fontSize: isMobile ? '0.8rem' : '0.875rem' 
+              }}>
+                {invoice.status}
+              </div>
+              <button style={{
+                background: 'none',
+                border: 'none',
+                color: '#06b6d4',
+                cursor: 'pointer',
+                fontSize: isMobile ? '0.8rem' : '0.875rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem'
+              }}>
+                <Download size={16} />
+                PDF
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const PreferencesTab = () => (
+    <div style={{ padding: isMobile ? '1.5rem' : '2rem' }}>
+      <h3 style={{ 
+        color: 'white', 
+        fontSize: isMobile ? '1.25rem' : '1.5rem', 
+        marginBottom: '1.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}>
+        <Bell size={24} />
         Preferencias y Notificaciones
       </h3>
 
       {/* Notifications */}
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        borderRadius: '16px',
-        padding: '1.5rem',
-        marginBottom: '2rem'
-      }}>
-        <h4 style={{ color: 'white', fontSize: '1.1rem', marginBottom: '1rem' }}>
+      <div style={styles.notificationsSection}>
+        <h4 style={{ 
+          color: 'white', 
+          fontSize: isMobile ? '1rem' : '1.1rem', 
+          marginBottom: '1rem' 
+        }}>
           Notificaciones
         </h4>
         
         {[
-          { key: 'email', label: 'Notificaciones por email', description: 'Recibe actualizaciones importantes por correo' },
-          { key: 'push', label: 'Notificaciones push', description: 'Notificaciones en tiempo real en tu navegador' },
-          { key: 'marketing', label: 'Emails de marketing', description: 'Recibe ofertas y novedades del producto' }
-        ].map((item) => (
+          { key: 'email' as const, label: 'Notificaciones por email', description: 'Recibe actualizaciones importantes por correo' },
+          { key: 'push' as const, label: 'Notificaciones push', description: 'Notificaciones en tiempo real en tu navegador' },
+          { key: 'marketing' as const, label: 'Emails de marketing', description: 'Recibe ofertas y novedades del producto' }
+        ].map((item, index, array) => (
           <div key={item.key} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1rem 0',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+            ...styles.notificationItem,
+            borderBottom: index === array.length - 1 ? 'none' : '1px solid rgba(255, 255, 255, 0.1)'
           }}>
             <div>
-              <div style={{ color: 'white', fontWeight: '600', marginBottom: '0.25rem' }}>
+              <div style={{ 
+                color: 'white', 
+                fontWeight: '600', 
+                marginBottom: '0.25rem',
+                fontSize: isMobile ? '0.9rem' : '1rem'
+              }}>
                 {item.label}
               </div>
-              <div style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.875rem' }}>
+              <div style={{ 
+                color: 'rgba(255, 255, 255, 0.6)', 
+                fontSize: isMobile ? '0.8rem' : '0.875rem' 
+              }}>
                 {item.description}
               </div>
             </div>
             <div
-              onClick={() => {
-                const key = item.key as keyof typeof currentUser.notifications;
-                setCurrentUser({
-                  ...currentUser,
-                  notifications: {
-                    ...currentUser.notifications,
-                    [key]: !currentUser.notifications[key]
-                  }
-                });
-              }}
-              style={{
-                width: '50px',
-                height: '30px',
-                background: currentUser.notifications[item.key as keyof typeof currentUser.notifications] 
-                  ? '#10b981' : 'rgba(255, 255, 255, 0.3)',
-                borderRadius: '15px',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'all 0.3s ease'
-              }}
+              onClick={() => handleNotificationToggle(item.key)}
+              style={styles.notificationToggle(currentUser.notifications[item.key])}
             >
-              <div style={{
-                width: '26px',
-                height: '26px',
-                background: 'white',
-                borderRadius: '50%',
-                position: 'absolute',
-                top: '2px',
-                left: currentUser.notifications[item.key as keyof typeof currentUser.notifications] ? '22px' : '2px',
-                transition: 'all 0.3s ease'
-              }} />
+              <div style={styles.notificationKnob(currentUser.notifications[item.key])} />
             </div>
           </div>
         ))}
       </div>
 
       {/* Language & Region */}
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        borderRadius: '16px',
-        padding: '1.5rem'
-      }}>
-        <h4 style={{ color: 'white', fontSize: '1.1rem', marginBottom: '1rem' }}>
+      <div style={styles.languageSection}>
+        <h4 style={{ 
+          color: 'white', 
+          fontSize: isMobile ? '1rem' : '1.1rem', 
+          marginBottom: '1rem' 
+        }}>
           Idioma y región
         </h4>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+        <div style={styles.languageGrid}>
           <div>
-            <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+            <label style={styles.formLabel}>
               Idioma
             </label>
             <select style={{
-              ...inputStyle,
+              ...styles.formInput(true),
               background: 'rgba(255, 255, 255, 0.95)',
               color: '#1e293b'
             }}>
@@ -742,11 +678,11 @@ const UserProfileScreen: React.FC = () => {
           </div>
           
           <div>
-            <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+            <label style={styles.formLabel}>
               Zona horaria
             </label>
             <select style={{
-              ...inputStyle,
+              ...styles.formInput(true),
               background: 'rgba(255, 255, 255, 0.95)',
               color: '#1e293b'
             }}>
@@ -760,57 +696,59 @@ const UserProfileScreen: React.FC = () => {
     </div>
   );
 
-  const renderDocumentsTab = () => (
-    <div style={{ padding: '2rem' }}>
-      <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '1.5rem' }}>
-        <Download size={24} style={{ display: 'inline', marginRight: '0.5rem' }} />
+  const DocumentsTab = () => (
+    <div style={{ padding: isMobile ? '1.5rem' : '2rem' }}>
+      <h3 style={{ 
+        color: 'white', 
+        fontSize: isMobile ? '1.25rem' : '1.5rem', 
+        marginBottom: '1.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}>
+        <Download size={24} />
         Documentos y Datos
       </h3>
 
       {/* Export Data */}
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        borderRadius: '16px',
-        padding: '1.5rem',
-        marginBottom: '2rem'
-      }}>
-        <h4 style={{ color: 'white', fontSize: '1.1rem', marginBottom: '1rem' }}>
+      <div style={styles.exportSection}>
+        <h4 style={{ 
+          color: 'white', 
+          fontSize: isMobile ? '1rem' : '1.1rem', 
+          marginBottom: '1rem' 
+        }}>
           Exportar mis datos
         </h4>
         
-        <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+        <p style={{ 
+          color: 'rgba(255, 255, 255, 0.7)', 
+          marginBottom: '1.5rem', 
+          fontSize: isMobile ? '0.9rem' : '0.95rem' 
+        }}>
           Descarga todos tus datos, análisis y configuraciones en formato JSON o PDF.
         </p>
         
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <button style={{
-            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-            border: 'none',
-            color: 'white',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
+        <div style={styles.exportActions}>
+          <button 
+            style={{
+              ...styles.exportButton('primary'),
+              ...(hoveredElement === 'export-json' ? styles.exportButtonHover : {})
+            }}
+            onMouseEnter={() => setHoveredElement('export-json')}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
             <Download size={18} />
             Exportar análisis (JSON)
           </button>
           
-          <button style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
-            color: 'white',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
+          <button 
+            style={{
+              ...styles.exportButton('secondary'),
+              ...(hoveredElement === 'export-pdf' ? styles.exportButtonHover : {})
+            }}
+            onMouseEnter={() => setHoveredElement('export-pdf')}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
             <Download size={18} />
             Reporte completo (PDF)
           </button>
@@ -818,13 +756,12 @@ const UserProfileScreen: React.FC = () => {
       </div>
 
       {/* Recent Documents */}
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        borderRadius: '16px',
-        padding: '1.5rem',
-        marginBottom: '2rem'
-      }}>
-        <h4 style={{ color: 'white', fontSize: '1.1rem', marginBottom: '1rem' }}>
+      <div style={styles.documentsSection}>
+        <h4 style={{ 
+          color: 'white', 
+          fontSize: isMobile ? '1rem' : '1.1rem', 
+          marginBottom: '1rem' 
+        }}>
           Documentos recientes
         </h4>
         
@@ -834,50 +771,29 @@ const UserProfileScreen: React.FC = () => {
           { name: 'MICMAC Matrix Results.xlsx', date: '08 Ago 2024', size: '1.2 MB' },
           { name: 'Tendencias Tecnológicas.pdf', date: '05 Ago 2024', size: '4.1 MB' }
         ].map((doc, index) => (
-          <div key={index} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1rem',
-            background: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: '12px',
-            marginBottom: '0.75rem',
-            transition: 'all 0.3s ease',
-            cursor: 'pointer'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+          <div 
+            key={index} 
+            style={{
+              ...styles.documentItem,
+              ...(hoveredElement === `doc-${index}` ? styles.documentItemHover : {})
+            }}
+            onMouseEnter={() => setHoveredElement(`doc-${index}`)}
+            onMouseLeave={() => setHoveredElement(null)}
           >
             <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                background: 'rgba(6, 182, 212, 0.2)',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: '1rem'
-              }}>
+              <div style={styles.documentIcon}>
                 <Download size={18} color="#06b6d4" />
               </div>
-              <div>
-                <div style={{ color: 'white', fontWeight: '600', marginBottom: '0.25rem' }}>
+              <div style={styles.documentInfo}>
+                <div style={styles.documentName}>
                   {doc.name}
                 </div>
-                <div style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.875rem' }}>
+                <div style={styles.documentMeta}>
                   {doc.date} • {doc.size}
                 </div>
               </div>
             </div>
-            <button style={{
-              background: 'none',
-              border: 'none',
-              color: '#06b6d4',
-              cursor: 'pointer',
-              padding: '0.5rem',
-              borderRadius: '8px'
-            }}>
+            <button style={styles.documentDownload}>
               <Download size={20} />
             </button>
           </div>
@@ -885,43 +801,40 @@ const UserProfileScreen: React.FC = () => {
       </div>
 
       {/* Data Management */}
-      <div style={{
-        background: 'rgba(239, 68, 68, 0.1)',
-        border: '2px solid rgba(239, 68, 68, 0.3)',
-        borderRadius: '16px',
-        padding: '1.5rem'
-      }}>
-        <h4 style={{ color: '#f87171', fontSize: '1.1rem', marginBottom: '1rem' }}>
-          <Trash2 size={20} style={{ display: 'inline', marginRight: '0.5rem' }} />
+      <div style={styles.dangerZone}>
+        <h4 style={styles.dangerTitle}>
+          <Trash2 size={20} />
           Gestión de datos
         </h4>
         
-        <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+        <p style={{ 
+          color: 'rgba(255, 255, 255, 0.7)', 
+          marginBottom: '1.5rem', 
+          fontSize: isMobile ? '0.9rem' : '0.95rem' 
+        }}>
           <strong>Atención:</strong> Estas acciones son irreversibles y eliminarán permanentemente tus datos.
         </p>
         
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <button style={{
-            background: 'transparent',
-            border: '2px solid rgba(239, 68, 68, 0.5)',
-            color: '#f87171',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}>
+        <div style={styles.dangerActions}>
+          <button 
+            style={{
+              ...styles.dangerButton('outline'),
+              ...(hoveredElement === 'delete-analysis' ? styles.dangerButtonHover : {})
+            }}
+            onMouseEnter={() => setHoveredElement('delete-analysis')}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
             Eliminar todos los análisis
           </button>
           
-          <button style={{
-            background: 'rgba(239, 68, 68, 0.2)',
-            border: '2px solid rgba(239, 68, 68, 0.5)',
-            color: '#f87171',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}>
+          <button 
+            style={{
+              ...styles.dangerButton('filled'),
+              ...(hoveredElement === 'delete-account' ? styles.dangerButtonHover : {})
+            }}
+            onMouseEnter={() => setHoveredElement('delete-account')}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
             Eliminar cuenta completa
           </button>
         </div>
@@ -929,143 +842,49 @@ const UserProfileScreen: React.FC = () => {
     </div>
   );
 
+  const Tabs = () => (
+    <div style={styles.tabsContainer}>
+      {tabsConfig.map((tab) => {
+        const iconMap = {
+          User,
+          CreditCard,
+          Bell,
+          Download
+        };
+        const Icon = iconMap[tab.icon as keyof typeof iconMap];
+        
+        return (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              ...styles.tab(activeTab === tab.key),
+              ...(hoveredElement === `tab-${tab.key}` && activeTab !== tab.key ? styles.tabHover : {})
+            }}
+            onMouseEnter={() => setHoveredElement(`tab-${tab.key}`)}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
+            <Icon size={18} />
+            {isMobile ? tab.label.split(' ')[0] : tab.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <div style={containerStyle}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            color: 'white',
-            fontSize: '1rem',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'color 0.3s ease'
-          }}
-          onClick={() => navigate('/menu')}
-          onMouseEnter={(e) => e.currentTarget.style.color = '#67e8f9'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'white'}
-        >
-          <ArrowLeft size={20} style={{marginRight: '0.5rem'}} />
-          Volver
-        </div>
-
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          {isEditing ? (
-            <>
-              <button
-                onClick={handleSave}
-                style={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  border: 'none',
-                  color: 'white',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-                }}
-              >
-                <Save size={18} />
-                Guardar
-              </button>
-              
-              <button
-                onClick={handleCancel}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  color: 'white',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <X size={18} />
-                Cancelar
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              style={{
-                background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-                border: 'none',
-                color: 'white',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)'
-              }}
-            >
-              <Edit size={18} />
-              Editar perfil
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div style={contentStyle}>
-        <div style={cardStyle}>
-          {/* Tabs */}
-          <div style={{
-            display: 'flex',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            padding: '1rem 2rem 0',
-            gap: '0.5rem',
-            flexWrap: 'wrap'
-          }}>
-            {[
-              { key: 'personal', label: 'Información Personal', icon: User },
-              { key: 'subscription', label: 'Suscripción', icon: CreditCard },
-              { key: 'preferences', label: 'Preferencias', icon: Bell },
-              { key: 'documents', label: 'Documentos', icon: Download }
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as any)}
-                  style={tabStyle(activeTab === tab.key)}
-                  onMouseEnter={(e) => {
-                    if (activeTab !== tab.key) {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                      e.currentTarget.style.color = 'white';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (activeTab !== tab.key) {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
-                    }
-                  }}
-                >
-                  <Icon size={18} style={{ marginRight: '0.5rem' }} />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Tab Content */}
-          <div>
-            {activeTab === 'personal' && renderPersonalTab()}
-            {activeTab === 'subscription' && renderSubscriptionTab()}
-            {activeTab === 'preferences' && renderPreferencesTab()}
-            {activeTab === 'documents' && renderDocumentsTab()}
+    <div style={styles.container}>
+      <Header />
+      
+      <div style={styles.content}>
+        <div style={styles.card}>
+          <Tabs />
+          
+          <div style={styles.tabContent}>
+            {activeTab === 'personal' && <PersonalTab />}
+            {activeTab === 'subscription' && <SubscriptionTab />}
+            {activeTab === 'preferences' && <PreferencesTab />}
+            {activeTab === 'documents' && <DocumentsTab />}
           </div>
         </div>
       </div>
