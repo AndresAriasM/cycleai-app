@@ -1,12 +1,29 @@
 // src/screens/auth/ForgotPasswordScreen.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle, AlertCircle, Key, Send } from 'lucide-react';
+import {
+  createForgotPasswordStyles,
+  getInputFocusStyle,
+  getButtonHoverStyle,
+  //getButtonActiveStyle,
+  getSecondaryButtonHoverStyle,
+  cssAnimations,
+  backgroundGradients,
+  getStepIconColor,
+  isMobileDevice,
+  getValidationStyle
+} from '../../styles/auth/forgotPasswordStyles';
 
 type RecoveryStep = 'email' | 'code' | 'newPassword' | 'success';
 
+interface FormErrors {
+  [key: string]: boolean;
+}
+
 const ForgotPasswordScreen: React.FC = () => {
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(isMobileDevice());
   const [currentStep, setCurrentStep] = useState<RecoveryStep>('email');
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
@@ -15,20 +32,43 @@ const ForgotPasswordScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
+  const [focusedField, setFocusedField] = useState<string>('');
+  const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
+
+  // Create styles with current state
+  const styles = createForgotPasswordStyles({ isMobile, isLoading, currentStep });
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(isMobileDevice());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Clear errors when changing fields
+  const clearError = (field?: string) => {
+    setError('');
+    if (field && fieldErrors[field]) {
+      setFieldErrors(prev => ({ ...prev, [field]: false }));
+    }
+  };
 
   // Simular envío de código
   const handleSendCode = async () => {
     if (!email.trim()) {
       setError('Ingresa tu email');
+      setFieldErrors({ email: true });
       return;
     }
     if (!email.includes('@')) {
       setError('Email inválido');
+      setFieldErrors({ email: true });
       return;
     }
 
     setIsLoading(true);
-    setError('');
+    clearError();
+    setFieldErrors({});
 
     // Verificar si el email existe en localStorage
     const users = JSON.parse(localStorage.getItem('cycleai_users') || '[]');
@@ -43,6 +83,7 @@ const ForgotPasswordScreen: React.FC = () => {
         setCurrentStep('code');
       } else {
         setError('No encontramos una cuenta asociada a este email');
+        setFieldErrors({ email: true });
       }
       setIsLoading(false);
     }, 1500);
@@ -52,17 +93,20 @@ const ForgotPasswordScreen: React.FC = () => {
   const handleVerifyCode = async () => {
     if (!verificationCode.trim()) {
       setError('Ingresa el código de verificación');
+      setFieldErrors({ code: true });
       return;
     }
 
     setIsLoading(true);
-    setError('');
+    clearError();
+    setFieldErrors({});
 
     setTimeout(() => {
       if (verificationCode === generatedCode || verificationCode === '123456') { // 123456 para demo
         setCurrentStep('newPassword');
       } else {
         setError('Código incorrecto. Intenta de nuevo');
+        setFieldErrors({ code: true });
       }
       setIsLoading(false);
     }, 800);
@@ -70,21 +114,30 @@ const ForgotPasswordScreen: React.FC = () => {
 
   // Cambiar contraseña
   const handleChangePassword = async () => {
+    const errors: FormErrors = {};
+    
     if (!newPassword.trim()) {
+      errors.newPassword = true;
       setError('Ingresa la nueva contraseña');
+      setFieldErrors(errors);
       return;
     }
     if (newPassword.length < 6) {
+      errors.newPassword = true;
       setError('La contraseña debe tener al menos 6 caracteres');
+      setFieldErrors(errors);
       return;
     }
     if (newPassword !== confirmPassword) {
+      errors.confirmPassword = true;
       setError('Las contraseñas no coinciden');
+      setFieldErrors(errors);
       return;
     }
 
     setIsLoading(true);
-    setError('');
+    clearError();
+    setFieldErrors({});
 
     setTimeout(() => {
       // Actualizar contraseña en localStorage
@@ -101,123 +154,95 @@ const ForgotPasswordScreen: React.FC = () => {
     }, 1000);
   };
 
-  // Estilos base
-  const containerStyle: React.CSSProperties = {
-    height: '100vh',
-    width: '100%',
-    background: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 25%, #3730a3 50%, #1e40af 75%, #1e3a8a 100%)',
-    position: 'relative',
-    overflow: 'hidden',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  // Handle input focus and blur
+  const handleInputFocus = (field: string) => {
+    setFocusedField(field);
   };
 
-  const contentStyle: React.CSSProperties = {
-    position: 'relative',
-    zIndex: 10,
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '2rem'
+  const handleInputBlur = () => {
+    setFocusedField('');
   };
 
-  const cardStyle: React.CSSProperties = {
-    background: 'rgba(15, 23, 42, 0.8)',
-    backdropFilter: 'blur(25px)',
-    borderRadius: '24px',
-    padding: '3rem 2rem',
-    border: '2px solid rgba(99, 102, 241, 0.4)',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)',
-    width: '100%',
-    maxWidth: '420px',
-    position: 'relative',
-    textAlign: 'center'
-  };
-
-  const backButtonStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '1.5rem',
-    left: '1.5rem',
-    display: 'flex',
-    alignItems: 'center',
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: '0.9rem',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'color 0.3s ease',
-    zIndex: 20
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '1.25rem 1.5rem',
-    background: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(8px)',
-    border: '2px solid rgba(255, 255, 255, 0.5)',
-    borderRadius: '16px',
-    fontSize: '1.125rem',
-    fontWeight: '500',
-    color: '#1e293b',
-    outline: 'none',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 8px 20px -5px rgba(0, 0, 0, 0.3)',
-    textAlign: 'center',
-    marginBottom: '1.5rem'
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '1.25rem 2rem',
-    background: isLoading 
-      ? '#64748b' 
-      : 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-    color: 'white',
-    fontSize: '1.125rem',
-    fontWeight: 'bold',
-    borderRadius: '16px',
-    border: 'none',
-    cursor: isLoading ? 'not-allowed' : 'pointer',
-    outline: 'none',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 15px 30px -5px rgba(6, 182, 212, 0.3)',
-    letterSpacing: '0.025em',
-    marginBottom: '1.5rem'
-  };
-
-  const secondaryButtonStyle: React.CSSProperties = {
-    ...buttonStyle,
-    background: 'rgba(255, 255, 255, 0.1)',
-    border: '2px solid rgba(255, 255, 255, 0.3)',
-    boxShadow: '0 8px 20px -5px rgba(0, 0, 0, 0.2)'
-  };
-
-  const errorStyle: React.CSSProperties = {
-    background: 'rgba(127, 29, 29, 0.4)',
-    border: '2px solid rgba(239, 68, 68, 0.5)',
-    borderRadius: '12px',
-    padding: '1rem',
-    marginBottom: '1.5rem',
-    color: 'white',
-    fontSize: '1rem',
-    fontWeight: '500'
-  };
-
-  const stepIndicatorStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: '2rem',
-    gap: '0.5rem'
-  };
-
-  const stepDotStyle = (active: boolean, completed: boolean): React.CSSProperties => ({
-    width: '12px',
-    height: '12px',
-    borderRadius: '50%',
-    background: completed ? '#10b981' : active ? '#06b6d4' : 'rgba(255, 255, 255, 0.3)',
-    transition: 'all 0.3s ease',
-    boxShadow: active || completed ? '0 0 0 3px rgba(6, 182, 212, 0.2)' : 'none'
+  // Get input styles with focus and error states
+  const getInputStyle = (field: string) => ({
+    ...styles.input,
+    ...(focusedField === field ? getInputFocusStyle() : {}),
+    ...getValidationStyle(fieldErrors[field] || false)
   });
+
+  const getCodeInputStyle = () => ({
+    ...styles.codeInput,
+    ...(focusedField === 'code' ? getInputFocusStyle() : {}),
+    ...getValidationStyle(fieldErrors.code || false)
+  });
+
+  const getPasswordInputStyle = (field: string) => ({
+    ...styles.passwordInput,
+    ...(focusedField === field ? getInputFocusStyle() : {}),
+    ...getValidationStyle(fieldErrors[field] || false)
+  });
+
+  // Background SVG Component
+  const BackgroundSVG = () => (
+    <div style={styles.backgroundDecorative}>
+      <svg style={styles.backgroundSvg} viewBox="0 0 1200 800">
+        <polygon points="100,100 300,100 200,50" fill="url(#grad1)" />
+        <polygon points="800,200 1000,300 700,300" fill="url(#grad2)" />
+        <circle cx="200" cy="600" r="100" fill="url(#grad3)" opacity="0.5" />
+        <circle cx="1000" cy="200" r="80" fill="url(#grad4)" opacity="0.3" />
+        <defs>
+          {Object.entries(backgroundGradients).map(([key, gradient]) => (
+            <linearGradient key={key} id={gradient.id}>
+              {gradient.stops.map((stop, index) => (
+                <stop 
+                  key={index}
+                  offset={stop.offset} 
+                  stopColor={stop.stopColor} 
+                  stopOpacity={stop.stopOpacity} 
+                />
+              ))}
+            </linearGradient>
+          ))}
+        </defs>
+      </svg>
+    </div>
+  );
+
+  // Step Indicator Component
+  const StepIndicator = () => (
+    <div style={styles.stepIndicator}>
+      {[1, 2, 3].map((step, index) => {
+        const isActive = (
+          (currentStep === 'email' && index === 0) ||
+          (currentStep === 'code' && index === 1) ||
+          (currentStep === 'newPassword' && index === 2)
+        );
+        const isCompleted = (
+          (currentStep === 'code' && index === 0) ||
+          (currentStep === 'newPassword' && index < 2) ||
+          (currentStep === 'success' && index < 3)
+        );
+        
+        return (
+          <div key={step} style={styles.stepDot(isActive, isCompleted)} />
+        );
+      })}
+    </div>
+  );
+
+  // Error Message Component
+  const ErrorMessage = () => error ? (
+    <div style={{...styles.errorMessage, ...styles.fadeIn}}>
+      {error}
+    </div>
+  ) : null;
+
+  // Demo Info Component
+  const DemoInfo = ({ text, highlight }: { text: string; highlight: string }) => (
+    <div style={styles.demoInfo}>
+      {text} <span style={styles.demoHighlight}>{highlight}</span>
+    </div>
+  );
 
   // Renderizar pasos
   const renderStepContent = () => {
@@ -225,18 +250,17 @@ const ForgotPasswordScreen: React.FC = () => {
       case 'email':
         return (
           <>
-            <div style={stepIndicatorStyle}>
-              {[1, 2, 3].map((step, index) => (
-                <div key={step} style={stepDotStyle(index === 0, false)} />
-              ))}
-            </div>
+            <StepIndicator />
 
-            <div style={{ marginBottom: '2rem' }}>
-              <Mail size={48} style={{ color: '#06b6d4', marginBottom: '1rem' }} />
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem' }}>
+            <div style={styles.stepHeader}>
+              <Mail 
+                size={isMobile ? 40 : 48} 
+                style={styles.stepIcon(getStepIconColor('email'))} 
+              />
+              <h2 style={styles.stepTitle}>
                 Recuperar Contraseña
               </h2>
-              <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem', lineHeight: '1.5' }}>
+              <p style={styles.stepDescription}>
                 Ingresa tu email y te enviaremos un código de verificación para restablecer tu contraseña
               </p>
             </div>
@@ -244,112 +268,145 @@ const ForgotPasswordScreen: React.FC = () => {
             <input
               type="email"
               value={email}
-              onChange={(e) => {setEmail(e.target.value); setError('');}}
-              style={inputStyle}
+              onChange={(e) => {setEmail(e.target.value); clearError('email');}}
+              onFocus={() => handleInputFocus('email')}
+              onBlur={handleInputBlur}
+              style={getInputStyle('email')}
               placeholder="tu@email.com"
               autoFocus
             />
 
-            {error && <div style={errorStyle}>{error}</div>}
+            <ErrorMessage />
 
             <button
               onClick={handleSendCode}
               disabled={isLoading}
-              style={buttonStyle}
+              style={styles.primaryButton()}
+              onMouseEnter={(e) => {
+                Object.assign(e.currentTarget.style, getButtonHoverStyle(isLoading));
+              }}
+              onMouseLeave={(e) => {
+                Object.assign(e.currentTarget.style, {
+                  transform: 'scale(1)',
+                  boxShadow: '0 15px 30px -5px rgba(6, 182, 212, 0.3)'
+                });
+              }}
             >
               {isLoading ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{
-                    width: '20px', height: '20px', marginRight: '0.5rem',
-                    border: '2px solid rgba(255, 255, 255, 0.3)',
-                    borderTop: '2px solid white', borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }} />
+                <div style={styles.loadingContainer}>
+                  <div style={styles.loadingSpinner} />
                   Enviando código...
                 </div>
               ) : (
                 <>
-                  <Send size={20} style={{ marginRight: '0.5rem' }} />
+                  <Send size={20} />
                   Enviar código
                 </>
               )}
             </button>
 
-            <div style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-              Para demo, usa: <strong>demo@cycleai.com</strong>
-            </div>
+            <DemoInfo 
+              text="Para demo, usa:" 
+              highlight="demo@cycleai.com" 
+            />
           </>
         );
 
       case 'code':
         return (
           <>
-            <div style={stepIndicatorStyle}>
-              {[1, 2, 3].map((step, index) => (
-                <div key={step} style={stepDotStyle(index === 1, index === 0)} />
-              ))}
-            </div>
+            <StepIndicator />
 
-            <div style={{ marginBottom: '2rem' }}>
-              <AlertCircle size={48} style={{ color: '#f59e0b', marginBottom: '1rem' }} />
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem' }}>
+            <div style={styles.stepHeader}>
+              <AlertCircle 
+                size={isMobile ? 40 : 48} 
+                style={styles.stepIcon(getStepIconColor('code'))} 
+              />
+              <h2 style={styles.stepTitle}>
                 Código Enviado
               </h2>
-              <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem', lineHeight: '1.5' }}>
+              <p style={styles.stepDescription}>
                 Enviamos un código de 6 dígitos a <br />
-                <strong style={{ color: '#06b6d4' }}>{email}</strong>
+                <span style={styles.stepDescriptionHighlight}>{email}</span>
               </p>
             </div>
 
             <input
               type="text"
               value={verificationCode}
-              onChange={(e) => {setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setError('');}}
-              style={{...inputStyle, letterSpacing: '0.5rem', fontSize: '1.5rem'}}
+              onChange={(e) => {
+                setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6)); 
+                clearError('code');
+              }}
+              onFocus={() => handleInputFocus('code')}
+              onBlur={handleInputBlur}
+              style={getCodeInputStyle()}
               placeholder="000000"
               maxLength={6}
               autoFocus
             />
 
-            {error && <div style={errorStyle}>{error}</div>}
+            <ErrorMessage />
 
             <button
               onClick={handleVerifyCode}
               disabled={isLoading || verificationCode.length !== 6}
-              style={{...buttonStyle, opacity: verificationCode.length !== 6 ? 0.6 : 1}}
+              style={styles.primaryButton(verificationCode.length !== 6)}
+              onMouseEnter={(e) => {
+                if (verificationCode.length === 6) {
+                  Object.assign(e.currentTarget.style, getButtonHoverStyle(isLoading, verificationCode.length !== 6));
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (verificationCode.length === 6) {
+                  Object.assign(e.currentTarget.style, {
+                    transform: 'scale(1)',
+                    boxShadow: '0 15px 30px -5px rgba(6, 182, 212, 0.3)'
+                  });
+                }
+              }}
             >
               {isLoading ? 'Verificando...' : 'Verificar código'}
             </button>
 
             <button
               onClick={() => handleSendCode()}
-              style={secondaryButtonStyle}
+              style={styles.secondaryButton}
               disabled={isLoading}
+              onMouseEnter={(e) => {
+                Object.assign(e.currentTarget.style, getSecondaryButtonHoverStyle(isLoading));
+              }}
+              onMouseLeave={(e) => {
+                Object.assign(e.currentTarget.style, {
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderColor: 'rgba(255, 255, 255, 0.3)'
+                });
+              }}
             >
               Reenviar código
             </button>
 
-            <div style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-              Para demo, usa: <strong>123456</strong> o el código mostrado en consola
-            </div>
+            <DemoInfo 
+              text="Para demo, usa:" 
+              highlight="123456 o el código mostrado en consola" 
+            />
           </>
         );
 
       case 'newPassword':
         return (
           <>
-            <div style={stepIndicatorStyle}>
-              {[1, 2, 3].map((step, index) => (
-                <div key={step} style={stepDotStyle(index === 2, index < 2)} />
-              ))}
-            </div>
+            <StepIndicator />
 
-            <div style={{ marginBottom: '2rem' }}>
-              <Key size={48} style={{ color: '#8b5cf6', marginBottom: '1rem' }} />
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem' }}>
+            <div style={styles.stepHeader}>
+              <Key 
+                size={isMobile ? 40 : 48} 
+                style={styles.stepIcon(getStepIconColor('newPassword'))} 
+              />
+              <h2 style={styles.stepTitle}>
                 Nueva Contraseña
               </h2>
-              <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem', lineHeight: '1.5' }}>
+              <p style={styles.stepDescription}>
                 Crea una nueva contraseña segura para tu cuenta
               </p>
             </div>
@@ -357,8 +414,10 @@ const ForgotPasswordScreen: React.FC = () => {
             <input
               type="password"
               value={newPassword}
-              onChange={(e) => {setNewPassword(e.target.value); setError('');}}
-              style={inputStyle}
+              onChange={(e) => {setNewPassword(e.target.value); clearError('newPassword');}}
+              onFocus={() => handleInputFocus('newPassword')}
+              onBlur={handleInputBlur}
+              style={getPasswordInputStyle('newPassword')}
               placeholder="Nueva contraseña (mín. 6 caracteres)"
               autoFocus
             />
@@ -366,17 +425,28 @@ const ForgotPasswordScreen: React.FC = () => {
             <input
               type="password"
               value={confirmPassword}
-              onChange={(e) => {setConfirmPassword(e.target.value); setError('');}}
-              style={inputStyle}
+              onChange={(e) => {setConfirmPassword(e.target.value); clearError('confirmPassword');}}
+              onFocus={() => handleInputFocus('confirmPassword')}
+              onBlur={handleInputBlur}
+              style={getPasswordInputStyle('confirmPassword')}
               placeholder="Confirmar nueva contraseña"
             />
 
-            {error && <div style={errorStyle}>{error}</div>}
+            <ErrorMessage />
 
             <button
               onClick={handleChangePassword}
               disabled={isLoading}
-              style={buttonStyle}
+              style={styles.primaryButton()}
+              onMouseEnter={(e) => {
+                Object.assign(e.currentTarget.style, getButtonHoverStyle(isLoading));
+              }}
+              onMouseLeave={(e) => {
+                Object.assign(e.currentTarget.style, {
+                  transform: 'scale(1)',
+                  boxShadow: '0 15px 30px -5px rgba(6, 182, 212, 0.3)'
+                });
+              }}
             >
               {isLoading ? 'Actualizando...' : 'Cambiar contraseña'}
             </button>
@@ -386,12 +456,15 @@ const ForgotPasswordScreen: React.FC = () => {
       case 'success':
         return (
           <>
-            <div style={{ marginBottom: '2rem' }}>
-              <CheckCircle size={64} style={{ color: '#10b981', marginBottom: '1.5rem' }} />
-              <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white', marginBottom: '1rem' }}>
+            <div style={styles.stepHeader}>
+              <CheckCircle 
+                size={isMobile ? 56 : 64} 
+                style={styles.successIcon} 
+              />
+              <h2 style={styles.successTitle}>
                 ¡Contraseña actualizada!
               </h2>
-              <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '1.1rem', lineHeight: '1.6' }}>
+              <p style={styles.successDescription}>
                 Tu contraseña ha sido cambiada exitosamente. <br />
                 Ahora puedes iniciar sesión con tu nueva contraseña.
               </p>
@@ -399,65 +472,69 @@ const ForgotPasswordScreen: React.FC = () => {
 
             <button
               onClick={() => navigate('/login')}
-              style={buttonStyle}
+              style={styles.primaryButton()}
+              onMouseEnter={(e) => {
+                Object.assign(e.currentTarget.style, getButtonHoverStyle(false));
+              }}
+              onMouseLeave={(e) => {
+                Object.assign(e.currentTarget.style, {
+                  transform: 'scale(1)',
+                  boxShadow: '0 15px 30px -5px rgba(6, 182, 212, 0.3)'
+                });
+              }}
             >
               Ir al login
             </button>
           </>
         );
+
+      default:
+        return null;
+    }
+  };
+
+  const handleBackClick = () => {
+    if (currentStep === 'email') {
+      navigate('/login');
+    } else {
+      setCurrentStep('email');
+      setError('');
+      setFieldErrors({});
     }
   };
 
   return (
-    <div style={containerStyle}>
-      {/* Fondo decorativo */}
-      <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1}}>
-        <svg style={{position: 'absolute', width: '100%', height: '100%', opacity: 0.08}} viewBox="0 0 1200 800">
-          <polygon points="100,100 300,100 200,50" fill="url(#grad1)" />
-          <polygon points="800,200 1000,300 700,300" fill="url(#grad2)" />
-          <circle cx="200" cy="600" r="100" fill="url(#grad3)" opacity="0.5" />
-          <circle cx="1000" cy="200" r="80" fill="url(#grad4)" opacity="0.3" />
-          <defs>
-            <linearGradient id="grad1"><stop offset="0%" stopColor="#06b6d4" stopOpacity="0.3" /><stop offset="100%" stopColor="#3b82f6" stopOpacity="0.1" /></linearGradient>
-            <linearGradient id="grad2"><stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.3" /><stop offset="100%" stopColor="#06b6d4" stopOpacity="0.1" /></linearGradient>
-            <linearGradient id="grad3"><stop offset="0%" stopColor="#f59e0b" stopOpacity="0.2" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0.1" /></linearGradient>
-            <linearGradient id="grad4"><stop offset="0%" stopColor="#10b981" stopOpacity="0.2" /><stop offset="100%" stopColor="#06b6d4" stopOpacity="0.1" /></linearGradient>
-          </defs>
-        </svg>
-      </div>
+    <div style={styles.container}>
+      <BackgroundSVG />
 
       {/* Contenido */}
-      <div style={contentStyle}>
-        <div style={cardStyle}>
+      <div style={styles.content}>
+        <div style={styles.card}>
           {/* Botón volver */}
-          <div 
-            style={backButtonStyle}
-            onClick={() => currentStep === 'email' ? navigate('/login') : setCurrentStep('email')}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#67e8f9'}
+          <button 
+            style={styles.backButton}
+            onClick={handleBackClick}
+            onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.backButtonHover)}
             onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
           >
             <ArrowLeft size={18} style={{marginRight: '0.5rem'}} />
             {currentStep === 'email' ? 'Login' : 'Volver'}
-          </div>
+          </button>
 
           {/* Triángulos decorativos */}
-          <div style={{
-            position: 'absolute', top: '-20px', left: '20px', width: '0', height: '0',
-            borderLeft: '18px solid transparent', borderRight: '18px solid transparent',
-            borderBottom: '25px solid rgba(6, 182, 212, 0.4)'
-          }}></div>
-          <div style={{
-            position: 'absolute', top: '-20px', right: '20px', width: '0', height: '0',
-            borderLeft: '18px solid transparent', borderRight: '18px solid transparent',
-            borderBottom: '25px solid rgba(139, 92, 246, 0.4)'
-          }}></div>
+          <div style={styles.topTriangleLeft}></div>
+          <div style={styles.topTriangleRight}></div>
 
-          {renderStepContent()}
+          {/* Contenido del paso actual */}
+          <div style={{...styles.slideUp}}>
+            {renderStepContent()}
+          </div>
         </div>
       </div>
 
+      {/* CSS Animations */}
       <style>
-        {`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}
+        {cssAnimations}
       </style>
     </div>
   );

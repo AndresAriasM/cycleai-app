@@ -7,7 +7,6 @@ import {
   CheckCircle, 
   Circle, 
   BarChart3, 
-  //TrendingUp,
   Award,
   Target,
   Lightbulb,
@@ -16,11 +15,11 @@ import {
   RefreshCw,
   AlertCircle,
   ChevronRight,
-  //ChevronDown,
   Users,
   Leaf,
   Settings
 } from 'lucide-react';
+import { createInnovationTestStyles } from '../../styles/innovationTestStyles';
 
 // Interfaces
 interface InnovationAnswer {
@@ -78,8 +77,10 @@ const InnovationTestScreen: React.FC = () => {
   const [answers, setAnswers] = useState<InnovationAnswer[]>([]);
   const [results, setResults] = useState<InnovationTestResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  //const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Create styles with current mobile state
+  const styles = createInnovationTestStyles({ isMobile });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -436,7 +437,7 @@ const InnovationTestScreen: React.FC = () => {
     const pathData = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
 
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+      <div style={styles.textCenter}>
         <svg width={size} height={size} style={{ background: '#f8fafc', borderRadius: '12px' }}>
           {/* Grid circles */}
           {[0.2, 0.4, 0.6, 0.8, 1.0].map(level => (
@@ -512,101 +513,44 @@ const InnovationTestScreen: React.FC = () => {
   // Setup Step
   if (currentStep === 'setup') {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-        padding: isMobile ? '1rem' : '2rem'
-      }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <div style={styles.container}>
+        <div style={styles.maxWidthContainer}>
           {/* Header */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '2rem'
-          }}>
+          <div style={styles.header}>
             <button
               onClick={() => navigate('/analysis')}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '0.5rem',
-                marginRight: '1rem',
-                cursor: 'pointer',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                color: '#64748b'
-              }}
+              style={styles.backButton}
             >
               <ArrowLeft size={24} />
             </button>
             
             <div>
-              <h1 style={{
-                fontSize: isMobile ? '1.5rem' : '2rem',
-                fontWeight: 'bold',
-                color: '#1e293b',
-                margin: 0
-              }}>
+              <h1 style={styles.headerTitle}>
                 Test de Innovación Empresarial
               </h1>
-              <p style={{
-                color: '#64748b',
-                fontSize: '1rem',
-                margin: '0.5rem 0 0 0'
-              }}>
+              <p style={styles.headerSubtitle}>
                 Cómo evaluar rápidamente su capacidad de innovación
               </p>
             </div>
           </div>
 
           {/* Setup Card */}
-          <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: isMobile ? '1.5rem' : '2rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
-                borderRadius: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1rem',
-                boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3)'
-              }}>
+          <div style={styles.card}>
+            <div style={styles.textCenter}>
+              <div style={styles.setupIcon}>
                 <Award size={40} color="white" />
               </div>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: 'bold',
-                color: '#1e293b',
-                marginBottom: '0.5rem'
-              }}>
+              <h2 style={styles.setupTitle}>
                 Evalúe su Capacidad de Innovación
               </h2>
-              <p style={{
-                color: '#64748b',
-                fontSize: '1rem',
-                lineHeight: '1.6'
-              }}>
+              <p style={styles.setupDescription}>
                 Este test evalúa tres dimensiones clave de la innovación empresarial mediante preguntas estructuradas
               </p>
             </div>
 
             {/* Modules Overview */}
             <div style={{ marginBottom: '2rem' }}>
-              <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: '600',
-                color: '#1e293b',
-                marginBottom: '1rem'
-              }}>
+              <h3 style={styles.modulesTitle}>
                 Módulos de Evaluación:
               </h3>
               
@@ -615,52 +559,19 @@ const InnovationTestScreen: React.FC = () => {
                 const color = getModuleColor(moduleKey);
                 
                 return (
-                  <div key={moduleKey} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '1rem',
-                    background: `${color}10`,
-                    border: `1px solid ${color}30`,
-                    borderRadius: '12px',
-                    marginBottom: '1rem'
-                  }}>
-                    <div style={{
-                      width: '50px',
-                      height: '50px',
-                      background: color,
-                      borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: '1rem'
-                    }}>
+                  <div key={moduleKey} style={styles.moduleItem(color)}>
+                    <div style={styles.moduleIcon(color)}>
                       <Icon size={24} color="white" />
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{
-                        fontSize: '1rem',
-                        fontWeight: '600',
-                        color: '#1e293b',
-                        marginBottom: '0.25rem'
-                      }}>
+                    <div style={styles.moduleContent}>
+                      <h4 style={styles.moduleTitle}>
                         {module.name}
                       </h4>
-                      <p style={{
-                        fontSize: '0.9rem',
-                        color: '#64748b',
-                        margin: 0
-                      }}>
+                      <p style={styles.moduleDescription}>
                         {module.description}
                       </p>
                     </div>
-                    <div style={{
-                      background: color,
-                      color: 'white',
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '12px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600'
-                    }}>
+                    <div style={styles.moduleBadge(color)}>
                       {module.questions.length} preguntas
                     </div>
                   </div>
@@ -670,37 +581,17 @@ const InnovationTestScreen: React.FC = () => {
 
             {/* Company Name Input */}
             <div style={{ marginBottom: '2rem' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '1rem',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '0.5rem'
-              }}>
+              <label style={styles.formLabel}>
                 Nombre de la empresa u organización:
               </label>
-              <div style={{ position: 'relative' }}>
-                <Building size={20} style={{
-                  position: 'absolute',
-                  left: '1rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#9ca3af'
-                }} />
+              <div style={styles.inputContainer}>
+                <Building size={20} style={styles.inputIcon} />
                 <input
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="Ingrese el nombre de su empresa"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem 0.75rem 0.75rem 3rem',
-                    border: '2px solid #e2e8f0',
-                    borderRadius: '12px',
-                    fontSize: '1rem',
-                    outline: 'none',
-                    transition: 'border-color 0.2s ease'
-                  }}
+                  style={styles.textInput}
                   onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
                   onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                 />
@@ -715,44 +606,14 @@ const InnovationTestScreen: React.FC = () => {
                 }
               }}
               disabled={!companyName.trim()}
-              style={{
-                width: '100%',
-                background: companyName.trim() 
-                  ? 'linear-gradient(135deg, #3b82f6, #1e40af)' 
-                  : '#94a3b8',
-                color: 'white',
-                border: 'none',
-                padding: '1rem 2rem',
-                borderRadius: '12px',
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-                cursor: companyName.trim() ? 'pointer' : 'not-allowed',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                boxShadow: companyName.trim() 
-                  ? '0 4px 12px rgba(59, 130, 246, 0.3)' 
-                  : 'none'
-              }}
+              style={styles.primaryButton(!!companyName.trim())}
             >
               <Lightbulb size={20} />
               Comenzar Evaluación ({totalQuestions} preguntas)
             </button>
 
-            <div style={{
-              marginTop: '1rem',
-              padding: '1rem',
-              background: '#fef3c7',
-              borderRadius: '12px',
-              border: '1px solid #f59e0b'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                color: '#92400e',
-                fontSize: '0.9rem'
-              }}>
+            <div style={styles.warningAlert}>
+              <div style={styles.alertContent}>
                 <AlertCircle size={16} style={{ marginRight: '0.5rem' }} />
                 <strong>Tiempo estimado:</strong> 10-15 minutos
               </div>
@@ -772,27 +633,11 @@ const InnovationTestScreen: React.FC = () => {
     const overallProgress = getProgressPercentage();
 
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-        padding: isMobile ? '1rem' : '2rem'
-      }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div style={styles.container}>
+        <div style={styles.maxWidthContainerLarge}>
           {/* Header with Progress */}
-          <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: '1.5rem',
-            marginBottom: '1rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '1rem'
-            }}>
+          <div style={styles.cardWithMargin}>
+            <div style={styles.progressHeader}>
               <h1 style={{
                 fontSize: isMobile ? '1.2rem' : '1.5rem',
                 fontWeight: 'bold',
@@ -811,45 +656,23 @@ const InnovationTestScreen: React.FC = () => {
             </div>
 
             {/* Progress Bar */}
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '0.5rem'
-              }}>
-                <span style={{ fontSize: '0.9rem', color: '#374151', fontWeight: '500' }}>
+            <div style={styles.progressContainer}>
+              <div style={styles.progressHeader}>
+                <span style={styles.progressLabel}>
                   Progreso General
                 </span>
-                <span style={{ fontSize: '0.9rem', color: '#3b82f6', fontWeight: '600' }}>
+                <span style={styles.progressValue}>
                   {Math.round(overallProgress)}%
                 </span>
               </div>
-              <div style={{
-                width: '100%',
-                height: '8px',
-                background: '#e2e8f0',
-                borderRadius: '4px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  width: `${overallProgress}%`,
-                  height: '100%',
-                  background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
-                  borderRadius: '4px',
-                  transition: 'width 0.3s ease'
-                }}></div>
+              <div style={styles.progressBar}>
+                <div style={styles.progressFill(overallProgress, 'linear-gradient(135deg, #3b82f6, #1e40af)')}></div>
               </div>
             </div>
 
             {/* Module Progress */}
             <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '0.5rem'
-              }}>
+              <div style={styles.progressHeader}>
                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
                   Módulo {currentModuleIndex + 1}: {currentModule[1].name}
                 </span>
@@ -857,60 +680,25 @@ const InnovationTestScreen: React.FC = () => {
                   {currentQuestionIndex + 1}/{currentModule[1].questions.length}
                 </span>
               </div>
-              <div style={{
-                width: '100%',
-                height: '4px',
-                background: '#e2e8f0',
-                borderRadius: '2px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  width: `${currentModuleProgress}%`,
-                  height: '100%',
-                  background: '#10b981',
-                  borderRadius: '2px',
-                  transition: 'width 0.3s ease'
-                }}></div>
+              <div style={styles.moduleProgressBar}>
+                <div style={styles.moduleProgressFill(currentModuleProgress)}></div>
               </div>
             </div>
           </div>
 
           {/* Question Card */}
-          <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: isMobile ? '1.5rem' : '2rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e2e8f0',
-            marginBottom: '1rem'
-          }}>
+          <div style={styles.cardWithMargin}>
             {/* Module Info */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '1.5rem',
-              padding: '1rem',
-              background: `${getModuleColor(`modulo${currentModuleIndex + 1}`)}10`,
-              borderRadius: '12px',
-              border: `1px solid ${getModuleColor(`modulo${currentModuleIndex + 1}`)}30`
-            }}>
+            <div style={styles.moduleInfo(getModuleColor(`modulo${currentModuleIndex + 1}`))}>
               {(() => {
                 const Icon = getModuleIcon(`modulo${currentModuleIndex + 1}`);
                 return <Icon size={24} color={getModuleColor(`modulo${currentModuleIndex + 1}`)} />;
               })()}
               <div style={{ marginLeft: '1rem' }}>
-                <div style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#1e293b',
-                  marginBottom: '0.25rem'
-                }}>
+                <div style={styles.moduleTitle}>
                   {currentModule[1].name}
                 </div>
-                <div style={{
-                  fontSize: '0.85rem',
-                  color: '#64748b'
-                }}>
+                <div style={styles.moduleDescription}>
                   {currentModule[1].description}
                 </div>
               </div>
@@ -918,45 +706,21 @@ const InnovationTestScreen: React.FC = () => {
 
             {/* Question */}
             <div style={{ marginBottom: '2rem' }}>
-              <div style={{
-                fontSize: '0.9rem',
-                color: '#64748b',
-                marginBottom: '0.5rem',
-                fontWeight: '500'
-              }}>
+              <div style={styles.questionNumber}>
                 Pregunta {currentQuestionIndex + 1} de {currentModule[1].questions.length}
               </div>
               
-              <h2 style={{
-                fontSize: isMobile ? '1.1rem' : '1.3rem',
-                fontWeight: '600',
-                color: '#1e293b',
-                lineHeight: '1.5',
-                marginBottom: '1.5rem'
-              }}>
+              <h2 style={styles.questionText}>
                 {currentQuestion.text}
               </h2>
 
               {/* Answer Options */}
-              <div style={{
-                display: 'grid',
-                gap: '0.75rem'
-              }}>
+              <div style={styles.answerGrid}>
                 {[1, 2, 3, 4].map(score => (
                   <button
                     key={score}
                     onClick={() => handleAnswer(currentQuestion.id, score)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '1rem 1.5rem',
-                      background: currentAnswer === score ? '#dbeafe' : '#f8fafc',
-                      border: `2px solid ${currentAnswer === score ? '#3b82f6' : '#e2e8f0'}`,
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left'
-                    }}
+                    style={styles.answerOption(currentAnswer === score)}
                     onMouseEnter={(e) => {
                       if (currentAnswer !== score) {
                         e.currentTarget.style.background = '#f1f5f9';
@@ -976,32 +740,12 @@ const InnovationTestScreen: React.FC = () => {
                         <Circle size={20} color="#9ca3af" />
                       }
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginBottom: '0.25rem'
-                      }}>
-                        <span style={{
-                          background: currentAnswer === score ? '#3b82f6' : '#6b7280',
-                          color: 'white',
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.8rem',
-                          fontWeight: 'bold',
-                          marginRight: '0.75rem'
-                        }}>
+                    <div style={styles.answerContent}>
+                      <div style={styles.answerHeader}>
+                        <span style={styles.answerScore(currentAnswer === score)}>
                           {score}
                         </span>
-                        <span style={{
-                          fontSize: '1rem',
-                          fontWeight: '600',
-                          color: currentAnswer === score ? '#1e40af' : '#374151'
-                        }}>
+                        <span style={styles.answerLabel(currentAnswer === score)}>
                           {getScaleLabel(score)}
                         </span>
                       </div>
@@ -1012,33 +756,16 @@ const InnovationTestScreen: React.FC = () => {
             </div>
 
             {/* Navigation */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
+            <div style={styles.navigation}>
               <button
                 onClick={handlePrevious}
                 disabled={currentModuleIndex === 0 && currentQuestionIndex === 0}
-                style={{
-                  background: (currentModuleIndex === 0 && currentQuestionIndex === 0) ? '#f1f5f9' : 'white',
-                  border: '2px solid #e2e8f0',
-                  color: (currentModuleIndex === 0 && currentQuestionIndex === 0) ? '#9ca3af' : '#374151',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '8px',
-                  cursor: (currentModuleIndex === 0 && currentQuestionIndex === 0) ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '600'
-                }}
+                style={styles.navButton(!(currentModuleIndex === 0 && currentQuestionIndex === 0))}
               >
                 Anterior
               </button>
 
-              <div style={{
-                fontSize: '0.9rem',
-                color: '#64748b',
-                fontWeight: '500'
-              }}>
+              <div style={styles.navInfo}>
                 {answers.length > 0 && (
                   <span>✓ {answers.length} respondidas</span>
                 )}
@@ -1047,24 +774,11 @@ const InnovationTestScreen: React.FC = () => {
               <button
                 onClick={handleNext}
                 disabled={!currentAnswer}
-                style={{
-                  background: currentAnswer 
-                    ? (currentModuleIndex === Object.keys(innovationModules).length - 1 && 
-                       currentQuestionIndex === currentModule[1].questions.length - 1
-                      ? 'linear-gradient(135deg, #10b981, #047857)' 
-                      : 'linear-gradient(135deg, #3b82f6, #1e40af)')
-                    : '#94a3b8',
-                  color: 'white',
-                  border: 'none',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '8px',
-                  cursor: currentAnswer ? 'pointer' : 'not-allowed',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
+                style={styles.navButton(
+                  !!currentAnswer, 
+                  currentModuleIndex === Object.keys(innovationModules).length - 1 && 
+                  currentQuestionIndex === currentModule[1].questions.length - 1 ? 'success' : 'primary'
+                )}
               >
                 {loading ? (
                   <>
@@ -1089,19 +803,8 @@ const InnovationTestScreen: React.FC = () => {
 
           {/* Additional Info */}
           {currentModuleIndex === 1 && currentQuestionIndex === 0 && (
-            <div style={{
-              background: '#fef3c7',
-              borderRadius: '12px',
-              padding: '1rem',
-              border: '1px solid #f59e0b',
-              marginBottom: '1rem'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                color: '#92400e',
-                fontSize: '0.9rem'
-              }}>
+            <div style={styles.infoAlert}>
+              <div style={styles.infoAlertContent}>
                 <AlertCircle size={16} style={{ marginRight: '0.5rem', marginTop: '0.1rem', flexShrink: 0 }} />
                 <div>
                   <strong>Nota sobre Capacidades de Absorción:</strong> Las capacidades de absorción son las capacidades que tiene la organización para realizar los procesos de Adquisición (identificar y adquirir conocimiento generado en el exterior), Asimilación (analizar, procesar, interpretar y comprender la información obtenida de fuentes externas), Transformación (hacer la transferencia y la combinación del conocimiento previo y del nuevo conocimiento adquirido y asimilado) y la Explotación del conocimiento externo.
@@ -1117,33 +820,15 @@ const InnovationTestScreen: React.FC = () => {
   // Results Step
   if (currentStep === 'results' && results) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-        padding: isMobile ? '1rem' : '2rem'
-      }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={styles.container}>
+        <div style={styles.maxWidthContainerXL}>
           {/* Header */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '2rem'
-          }}>
+          <div style={styles.headerWithJustifyBetween}>
             <div>
-              <h1 style={{
-                fontSize: isMobile ? '1.5rem' : '2rem',
-                fontWeight: 'bold',
-                color: '#1e293b',
-                margin: 0
-              }}>
+              <h1 style={styles.headerTitle}>
                 Resultados del Test de Innovación
               </h1>
-              <p style={{
-                color: '#64748b',
-                fontSize: '1rem',
-                margin: '0.5rem 0 0 0'
-              }}>
+              <p style={styles.headerSubtitle}>
                 {results.company_name}
               </p>
             </div>
@@ -1170,16 +855,7 @@ const InnovationTestScreen: React.FC = () => {
                   document.body.removeChild(a);
                   URL.revokeObjectURL(url);
                 }}
-                style={{
-                  background: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
-                  color: '#475569',
-                  padding: '0.5rem',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
+                style={styles.actionButton}
                 title="Exportar resultados"
               >
                 <Download size={16} />
@@ -1195,16 +871,7 @@ const InnovationTestScreen: React.FC = () => {
                     });
                   }
                 }}
-                style={{
-                  background: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
-                  color: '#475569',
-                  padding: '0.5rem',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
+                style={styles.actionButton}
                 title="Compartir resultados"
               >
                 <Share2 size={16} />
@@ -1213,61 +880,25 @@ const InnovationTestScreen: React.FC = () => {
           </div>
 
           {/* Overall Score Card */}
-          <div style={{
-            background: `linear-gradient(135deg, ${getLevelColor(results.innovation_level.level)}15, ${getLevelColor(results.innovation_level.level)}05)`,
-            border: `2px solid ${getLevelColor(results.innovation_level.level)}`,
-            borderRadius: '20px',
-            padding: isMobile ? '1.5rem' : '2rem',
-            marginBottom: '2rem',
-            textAlign: 'center'
-          }}>
-            <div style={{
-              fontSize: isMobile ? '2.5rem' : '3rem',
-              fontWeight: 'bold',
-              color: getLevelColor(results.innovation_level.level),
-              marginBottom: '1rem'
-            }}>
+          <div style={styles.overallScoreCard(getLevelColor(results.innovation_level.level))}>
+            <div style={styles.overallScore(getLevelColor(results.innovation_level.level))}>
               {results.overall_percentage.toFixed(1)}%
             </div>
             
-            <div style={{
-              fontSize: isMobile ? '1.2rem' : '1.5rem',
-              fontWeight: 'bold',
-              color: '#1e293b',
-              marginBottom: '0.5rem'
-            }}>
+            <div style={styles.levelTitle}>
               {results.innovation_level.level}
             </div>
             
-            <p style={{
-              fontSize: '1rem',
-              color: '#64748b',
-              lineHeight: '1.6',
-              maxWidth: '600px',
-              margin: '0 auto'
-            }}>
+            <p style={styles.levelDescription}>
               {results.innovation_level.description}
             </p>
           </div>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-            gap: '2rem'
-          }}>
+          <div style={styles.resultsGrid}>
             {/* Spider Chart */}
-            <div style={{
-              background: 'white',
-              borderRadius: '16px',
-              padding: isMobile ? '1.5rem' : '2rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e2e8f0'
-            }}>
+            <div style={styles.card}>
               <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-                color: '#1e293b',
-                marginBottom: '1rem',
+                ...styles.modulesTitle,
                 textAlign: 'center'
               }}>
                 Perfil de Innovación
@@ -1277,19 +908,8 @@ const InnovationTestScreen: React.FC = () => {
             </div>
 
             {/* Module Scores */}
-            <div style={{
-              background: 'white',
-              borderRadius: '16px',
-              padding: isMobile ? '1.5rem' : '2rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e2e8f0'
-            }}>
-              <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-                color: '#1e293b',
-                marginBottom: '1.5rem'
-              }}>
+            <div style={styles.card}>
+              <h3 style={styles.modulesTitle}>
                 Puntuación por Módulo
               </h3>
               
@@ -1299,75 +919,28 @@ const InnovationTestScreen: React.FC = () => {
                 const color = getModuleColor(moduleKey);
                 
                 return (
-                  <div key={index} style={{
-                    marginBottom: '1.5rem',
-                    padding: '1rem',
-                    background: '#f8fafc',
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '0.75rem'
-                    }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        background: color,
-                        borderRadius: '10px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginRight: '1rem'
-                      }}>
+                  <div key={index} style={styles.moduleScoreItem}>
+                    <div style={styles.moduleScoreHeader}>
+                      <div style={styles.moduleScoreIcon(color)}>
                         <Icon size={20} color="white" />
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{
-                          fontSize: '1rem',
-                          fontWeight: '600',
-                          color: '#1e293b',
-                          marginBottom: '0.25rem'
-                        }}>
+                      <div style={styles.moduleScoreContent}>
+                        <div style={styles.moduleScoreTitle}>
                           {moduleScore.module_name}
                         </div>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '1rem'
-                        }}>
-                          <span style={{
-                            fontSize: '1.2rem',
-                            fontWeight: 'bold',
-                            color: color
-                          }}>
+                        <div style={styles.moduleScoreValues}>
+                          <span style={styles.moduleScorePercentage(color)}>
                             {moduleScore.percentage.toFixed(1)}%
                           </span>
-                          <span style={{
-                            fontSize: '0.9rem',
-                            color: '#64748b'
-                          }}>
+                          <span style={styles.moduleScorePoints}>
                             ({moduleScore.score}/{moduleScore.max_score} pts)
                           </span>
                         </div>
                       </div>
                     </div>
                     
-                    <div style={{
-                      width: '100%',
-                      height: '8px',
-                      background: '#e2e8f0',
-                      borderRadius: '4px',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{
-                        width: `${moduleScore.percentage}%`,
-                        height: '100%',
-                        background: color,
-                        borderRadius: '4px',
-                        transition: 'width 0.5s ease'
-                      }}></div>
+                    <div style={styles.progressBar}>
+                      <div style={styles.progressFill(moduleScore.percentage, color)}></div>
                     </div>
                   </div>
                 );
@@ -1376,62 +949,19 @@ const InnovationTestScreen: React.FC = () => {
           </div>
 
           {/* Recommendations */}
-          <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: isMobile ? '1.5rem' : '2rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e2e8f0',
-            marginTop: '2rem'
-          }}>
-            <h3 style={{
-              fontSize: '1.2rem',
-              fontWeight: 'bold',
-              color: '#1e293b',
-              marginBottom: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
+          <div style={{...styles.card, marginTop: '2rem'}}>
+            <h3 style={styles.recommendationsTitle}>
               <Lightbulb size={20} />
               Recomendaciones para Mejorar
             </h3>
             
-            <div style={{
-              display: 'grid',
-              gap: '1rem'
-            }}>
+            <div style={{ display: 'grid', gap: '1rem' }}>
               {results.innovation_level.recommendations.map((recommendation, index) => (
-                <div key={index} style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  padding: '1rem',
-                  background: '#f0f9ff',
-                  border: '1px solid #0ea5e9',
-                  borderRadius: '12px',
-                  gap: '0.75rem'
-                }}>
-                  <div style={{
-                    background: '#0ea5e9',
-                    color: 'white',
-                    borderRadius: '50%',
-                    width: '24px',
-                    height: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold',
-                    flexShrink: 0,
-                    marginTop: '0.1rem'
-                  }}>
+                <div key={index} style={styles.recommendationItem}>
+                  <div style={styles.recommendationNumber}>
                     {index + 1}
                   </div>
-                  <span style={{
-                    fontSize: '0.95rem',
-                    color: '#0c4a6e',
-                    lineHeight: '1.5'
-                  }}>
+                  <span style={styles.recommendationText}>
                     {recommendation}
                   </span>
                 </div>
@@ -1440,13 +970,7 @@ const InnovationTestScreen: React.FC = () => {
           </div>
 
           {/* Actions */}
-          <div style={{
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            gap: '1rem',
-            marginTop: '2rem',
-            justifyContent: 'center'
-          }}>
+          <div style={styles.actionsContainer}>
             <button
               onClick={() => {
                 setCurrentStep('setup');
@@ -1456,20 +980,7 @@ const InnovationTestScreen: React.FC = () => {
                 setCurrentModuleIndex(0);
                 setCurrentQuestionIndex(0);
               }}
-              style={{
-                background: 'white',
-                border: '2px solid #e2e8f0',
-                color: '#374151',
-                padding: '1rem 2rem',
-                borderRadius: '12px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem'
-              }}
+              style={styles.secondaryButton}
             >
               <RefreshCw size={18} />
               Realizar Nuevo Test
@@ -1478,18 +989,8 @@ const InnovationTestScreen: React.FC = () => {
             <button
               onClick={() => navigate('/analysis')}
               style={{
-                background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
-                color: 'white',
-                border: 'none',
-                padding: '1rem 2rem',
-                borderRadius: '12px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
+                ...styles.primaryButton(true),
+                width: 'auto',
                 boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
               }}
             >

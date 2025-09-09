@@ -1,5 +1,5 @@
 // frontend/src/screens/analysis/HypeCycleScreen.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Plus, Trash2, Search, Globe, TrendingUp, BarChart3, MapPin, Clock, Eye, Download, Share2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as HypeService from '../../services/hypecycleService';
@@ -8,6 +8,7 @@ import NewsResultsTable from '../../components/analysis/NewsResultsTable';
 import GeographicDistribution from '../../components/analysis/GeographicDistribution';
 import YearlyTrendsChart from '../../components/analysis/YearlyTrendsChart';
 import InsightsPanel from '../../components/analysis/InsightsPanel';
+import { hypeCycleScreenStyles } from '../../styles/hypeCycleScreenStyles';
 
 type SearchTerm = HypeService.SearchTerm;
 type HypeCycleResponse = HypeService.HypeCycleResponse;
@@ -15,6 +16,8 @@ const hypecycleService = HypeService.hypecycleService;
 
 const HypeCycleScreen: React.FC = () => {
   const navigate = useNavigate();
+  const resultsRef = useRef<HTMLDivElement>(null);
+  
   const [searchTerms, setSearchTerms] = useState<SearchTerm[]>([
     { value: '', operator: 'AND', exact_match: false }
   ]);
@@ -33,9 +36,18 @@ const HypeCycleScreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Verificar salud del backend al cargar
     checkBackendHealth();
   }, []);
+
+  // Scroll automático a resultados cuando aparecen
+  useEffect(() => {
+    if (results && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start'
+      });
+    }
+  }, [results]);
 
   const checkBackendHealth = async () => {
     const health = await hypecycleService.checkHealth();
@@ -91,7 +103,7 @@ const HypeCycleScreen: React.FC = () => {
       setActiveTab('overview');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
-      await checkBackendHealth(); // Verificar conexión si hay error
+      await checkBackendHealth();
     } finally {
       setLoading(false);
     }
@@ -140,94 +152,55 @@ const HypeCycleScreen: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  /*const getTabIcon = (tab: string) => {
-    switch (tab) {
-      case 'overview': return TrendingUp;
-      case 'details': return BarChart3;
-      case 'geographic': return MapPin;
-      case 'news': return Eye;
-      default: return TrendingUp;
-    }
-  };*/
+  const handleTabChange = (tab: 'overview' | 'details' | 'geographic' | 'news') => {
+    setActiveTab(tab);
+    // Pequeño delay para asegurar que el contenido se renderice antes del scroll
+    setTimeout(() => {
+      if (resultsRef.current) {
+        resultsRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
+        });
+      }
+    }, 100);
+  };
+
+  const tabs = [
+    { key: 'overview' as const, label: isMobile ? 'Resumen' : 'Resumen', icon: TrendingUp },
+    { key: 'details' as const, label: isMobile ? 'Detalles' : 'Detalles', icon: BarChart3 },
+    { key: 'geographic' as const, label: isMobile ? 'Mapa' : 'Geográfico', icon: MapPin },
+    { key: 'news' as const, label: isMobile ? 'Noticias' : 'Noticias', icon: Eye }
+  ];
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-      paddingBottom: isMobile ? '2rem' : '0'
-    }}>
+    <div style={hypeCycleScreenStyles.container(isMobile)}>
       {/* Header */}
-      <div style={{
-        background: 'white',
-        borderBottom: '1px solid #e2e8f0',
-        padding: isMobile ? '1rem' : '1rem 2rem',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-      }}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          marginBottom: isMobile ? '1rem' : '1.5rem'
-        }}>
+      <div style={hypeCycleScreenStyles.header(isMobile)}>
+        <div style={hypeCycleScreenStyles.headerContent(isMobile)}>
           <div style={{display: 'flex', alignItems: 'center'}}>
             <button
               onClick={() => navigate('/analysis')}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '0.5rem',
-                marginRight: '1rem',
-                cursor: 'pointer',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                color: '#64748b'
-              }}
+              style={hypeCycleScreenStyles.backButton}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
             >
               <ArrowLeft size={24} />
             </button>
             
             <div>
-              <h1 style={{
-                fontSize: isMobile ? '1.4rem' : '1.8rem',
-                fontWeight: 'bold',
-                color: '#1e293b',
-                margin: 0,
-                lineHeight: '1.2'
-              }}>
+              <h1 style={hypeCycleScreenStyles.headerTitle(isMobile)}>
                 Análisis Hype Cycle
               </h1>
-              <p style={{
-                color: '#64748b',
-                fontSize: isMobile ? '0.9rem' : '1rem',
-                margin: '0.25rem 0 0 0'
-              }}>
+              <p style={hypeCycleScreenStyles.headerSubtitle(isMobile)}>
                 Analiza el estado de madurez de tecnologías usando SERPAPI
               </p>
             </div>
           </div>
 
           {/* Status del backend */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.5rem 1rem',
-            borderRadius: '20px',
-            background: backendHealth === true ? '#dcfce7' : backendHealth === false ? '#fee2e2' : '#fef3c7',
-            border: `1px solid ${backendHealth === true ? '#16a34a' : backendHealth === false ? '#dc2626' : '#d97706'}`
-          }}>
-            <div style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              background: backendHealth === true ? '#16a34a' : backendHealth === false ? '#dc2626' : '#d97706'
-            }}></div>
-            <span style={{
-              fontSize: '0.8rem',
-              fontWeight: '600',
-              color: backendHealth === true ? '#16a34a' : backendHealth === false ? '#dc2626' : '#d97706'
-            }}>
+          <div style={hypeCycleScreenStyles.statusIndicator(backendHealth)}>
+            <div style={hypeCycleScreenStyles.statusDot(backendHealth)}></div>
+            <span style={hypeCycleScreenStyles.statusText(backendHealth)}>
               {backendHealth === true ? 'Conectado' : backendHealth === false ? 'Desconectado' : 'Verificando...'}
             </span>
           </div>
@@ -235,68 +208,30 @@ const HypeCycleScreen: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div style={{ 
-        padding: isMobile ? '1rem' : '2rem', 
-        maxWidth: '1400px', 
-        margin: '0 auto' 
-      }}>
+      <div style={hypeCycleScreenStyles.contentArea(isMobile)}>
         {/* Query Builder Card */}
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: isMobile ? '1.5rem' : '2rem',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          marginBottom: '2rem',
-          border: '1px solid #e2e8f0'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1.5rem'
-          }}>
-            <h2 style={{ 
-              fontSize: isMobile ? '1.1rem' : '1.3rem', 
-              fontWeight: 'bold',
-              color: '#1e293b',
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
+        <div style={hypeCycleScreenStyles.queryCard(isMobile)}>
+          <div style={hypeCycleScreenStyles.queryHeader}>
+            <h2 style={hypeCycleScreenStyles.queryTitle(isMobile)}>
               <Search size={20} />
               Construir Ecuación de Búsqueda
             </h2>
 
             {results && (
-              <div style={{display: 'flex', gap: '0.5rem'}}>
+              <div style={hypeCycleScreenStyles.exportButtons}>
                 <button
                   onClick={handleExportResults}
-                  style={{
-                    background: '#f1f5f9',
-                    border: '1px solid #cbd5e1',
-                    color: '#475569',
-                    padding: '0.5rem',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
+                  style={hypeCycleScreenStyles.exportButton}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}
                   title="Exportar resultados"
                 >
                   <Download size={16} />
                 </button>
                 <button
-                  style={{
-                    background: '#f1f5f9',
-                    border: '1px solid #cbd5e1',
-                    color: '#475569',
-                    padding: '0.5rem',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
+                  style={hypeCycleScreenStyles.exportButton}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}
                   title="Compartir análisis"
                 >
                   <Share2 size={16} />
@@ -307,65 +242,29 @@ const HypeCycleScreen: React.FC = () => {
 
           {/* Search Terms Builder */}
           {searchTerms.map((term, index) => (
-            <div key={index} style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile 
-                ? '1fr' 
-                : '2fr 120px 100px 50px',
-              gap: isMobile ? '0.75rem' : '1rem',
-              marginBottom: '1rem',
-              padding: '1rem',
-              background: '#f8fafc',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0'
-            }}>
+            <div key={index} style={hypeCycleScreenStyles.searchTermContainer(isMobile)}>
               <input
                 type="text"
                 value={term.value}
                 onChange={(e) => updateSearchTerm(index, 'value', e.target.value)}
                 placeholder="ej: artificial intelligence, blockchain, quantum computing"
-                style={{
-                  padding: '0.75rem',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: isMobile ? '16px' : '1rem',
-                  width: '100%',
-                  background: 'white'
-                }}
+                style={hypeCycleScreenStyles.searchInput(isMobile)}
+                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
               />
               
-              <div style={{
-                display: isMobile ? 'flex' : 'contents',
-                gap: isMobile ? '0.5rem' : '0',
-                alignItems: 'center'
-              }}>
+              <div style={hypeCycleScreenStyles.searchControls(isMobile)}>
                 <select
                   value={term.operator}
                   onChange={(e) => updateSearchTerm(index, 'operator', e.target.value)}
-                  style={{
-                    padding: isMobile ? '0.5rem' : '0.75rem',
-                    border: '2px solid #e2e8f0',
-                    borderRadius: '8px',
-                    fontSize: isMobile ? '14px' : '1rem',
-                    flex: isMobile ? '1' : 'none',
-                    background: 'white'
-                  }}
+                  style={hypeCycleScreenStyles.selectInput(isMobile)}
                 >
                   <option value="AND">AND</option>
                   <option value="OR">OR</option>
                   <option value="NOT">NOT</option>
                 </select>
 
-                <label style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.5rem',
-                  fontSize: isMobile ? '0.9rem' : '1rem',
-                  whiteSpace: 'nowrap',
-                  flex: isMobile ? '1' : 'none',
-                  color: '#374151',
-                  cursor: 'pointer'
-                }}>
+                <label style={hypeCycleScreenStyles.exactMatchLabel(isMobile)}>
                   <input
                     type="checkbox"
                     checked={term.exact_match}
@@ -378,16 +277,7 @@ const HypeCycleScreen: React.FC = () => {
                 <button
                   onClick={() => removeSearchTerm(index)}
                   disabled={searchTerms.length === 1}
-                  style={{
-                    background: searchTerms.length === 1 ? '#f1f5f9' : '#fee2e2',
-                    border: 'none',
-                    padding: isMobile ? '0.5rem' : '0.5rem',
-                    borderRadius: '6px',
-                    cursor: searchTerms.length === 1 ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
+                  style={hypeCycleScreenStyles.removeButton(searchTerms.length > 1, isMobile)}
                   title="Eliminar término"
                 >
                   <Trash2 size={16} color={searchTerms.length === 1 ? '#cbd5e1' : '#ef4444'} />
@@ -397,47 +287,19 @@ const HypeCycleScreen: React.FC = () => {
           ))}
 
           {/* Controls */}
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: isMobile ? 'column' : 'row',
-            gap: '1rem', 
-            marginTop: '1rem',
-            alignItems: isMobile ? 'stretch' : 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div style={{display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem'}}>
+          <div style={hypeCycleScreenStyles.controlsSection(isMobile)}>
+            <div style={hypeCycleScreenStyles.controlsLeft(isMobile)}>
               <button
                 onClick={addSearchTerm}
-                style={{
-                  background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                  border: 'none',
-                  color: 'white',
-                  padding: '0.75rem 1.25rem',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  fontSize: isMobile ? '0.9rem' : '1rem',
-                  fontWeight: '600',
-                  boxShadow: '0 2px 4px rgba(14, 165, 233, 0.3)'
-                }}
+                style={hypeCycleScreenStyles.addTermButton}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
                 <Plus size={16} />
                 Añadir término
               </button>
 
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.75rem',
-                fontSize: isMobile ? '0.9rem' : '1rem',
-                background: '#f8fafc',
-                padding: '0.75rem 1rem',
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0'
-              }}>
+              <div style={hypeCycleScreenStyles.yearControl(isMobile)}>
                 <Clock size={16} color="#64748b" />
                 <label style={{color: '#374151', fontWeight: '500'}}>Desde año:</label>
                 <input
@@ -446,14 +308,7 @@ const HypeCycleScreen: React.FC = () => {
                   onChange={(e) => setMinYear(parseInt(e.target.value))}
                   min={2010}
                   max={2024}
-                  style={{
-                    padding: '0.5rem',
-                    border: '2px solid #e2e8f0',
-                    borderRadius: '6px',
-                    width: '80px',
-                    fontSize: isMobile ? '16px' : '1rem',
-                    background: 'white'
-                  }}
+                  style={hypeCycleScreenStyles.yearInput(isMobile)}
                 />
               </div>
             </div>
@@ -461,16 +316,9 @@ const HypeCycleScreen: React.FC = () => {
             <button
               onClick={checkBackendHealth}
               disabled={loading}
-              style={{
-                background: '#f1f5f9',
-                border: '1px solid #cbd5e1',
-                color: '#475569',
-                padding: '0.5rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center'
-              }}
+              style={hypeCycleScreenStyles.refreshButton}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}
               title="Verificar conexión"
             >
               <RefreshCw size={16} />
@@ -478,65 +326,25 @@ const HypeCycleScreen: React.FC = () => {
           </div>
 
           {/* Preview */}
-          <div style={{ 
-            marginTop: '1.5rem', 
-            padding: '1rem', 
-            background: '#f8fafc', 
-            borderRadius: '12px',
-            border: '1px solid #e2e8f0'
-          }}>
-            <h4 style={{ 
-              fontSize: isMobile ? '0.9rem' : '1rem',
-              color: '#374151',
-              margin: '0 0 0.5rem 0',
-              fontWeight: '600'
-            }}>
+          <div style={hypeCycleScreenStyles.previewSection}>
+            <h4 style={hypeCycleScreenStyles.previewTitle(isMobile)}>
               Vista previa de la consulta:
             </h4>
-            <code style={{ 
-              display: 'block', 
-              marginTop: '0.5rem', 
-              padding: '0.75rem', 
-              background: 'white', 
-              borderRadius: '8px',
-              fontSize: isMobile ? '0.8rem' : '0.9rem',
-              wordBreak: 'break-all',
-              overflowWrap: 'break-word',
-              color: '#1e293b',
-              border: '1px solid #e2e8f0',
-              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
-            }}>
+            <code style={hypeCycleScreenStyles.previewCode(isMobile)}>
               {buildPreviewQuery() || 'Añade términos para ver la consulta'}
             </code>
           </div>
 
           {/* Action Buttons */}
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: isMobile ? 'column' : 'row',
-            gap: '1rem', 
-            marginTop: '1.5rem' 
-          }}>
+          <div style={hypeCycleScreenStyles.actionButtons(isMobile)}>
             <button
               onClick={handleAnalyze}
               disabled={loading || searchTerms.filter(t => t.value.trim()).length === 0 || backendHealth === false}
-              style={{
-                background: loading ? '#94a3b8' : 'linear-gradient(135deg, #4c1d95, #3730a3)',
-                color: 'white',
-                border: 'none',
-                padding: '1rem 2rem',
-                borderRadius: '12px',
-                fontSize: isMobile ? '1rem' : '1.1rem',
-                fontWeight: 'bold',
-                cursor: loading || backendHealth === false ? 'not-allowed' : 'pointer',
-                flex: isMobile ? 'none' : 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                boxShadow: loading ? 'none' : '0 4px 12px rgba(76, 29, 149, 0.3)',
-                opacity: backendHealth === false ? 0.5 : 1
-              }}
+              style={hypeCycleScreenStyles.analyzeButton(
+                loading, 
+                searchTerms.filter(t => t.value.trim()).length === 0 || backendHealth === false,
+                isMobile
+              )}
             >
               {loading ? (
                 <>
@@ -554,21 +362,7 @@ const HypeCycleScreen: React.FC = () => {
             <button
               onClick={handleTestAnalyze}
               disabled={loading}
-              style={{
-                background: loading ? '#94a3b8' : 'linear-gradient(135deg, #059669, #047857)',
-                color: 'white',
-                border: 'none',
-                padding: '1rem 2rem',
-                borderRadius: '12px',
-                fontSize: isMobile ? '1rem' : '1.1rem',
-                fontWeight: 'bold',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                boxShadow: loading ? 'none' : '0 4px 12px rgba(5, 150, 105, 0.3)'
-              }}
+              style={hypeCycleScreenStyles.testButton(loading)}
             >
               <Globe size={20} />
               Datos de Prueba
@@ -578,30 +372,8 @@ const HypeCycleScreen: React.FC = () => {
 
         {/* Error Display */}
         {error && (
-          <div style={{
-            background: '#fee2e2',
-            border: '1px solid #fca5a5',
-            color: '#dc2626',
-            padding: '1rem 1.5rem',
-            borderRadius: '12px',
-            marginBottom: '2rem',
-            fontSize: isMobile ? '0.9rem' : '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
-            <div style={{
-              background: '#dc2626',
-              color: 'white',
-              borderRadius: '50%',
-              width: '24px',
-              height: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '0.8rem',
-              fontWeight: 'bold'
-            }}>
+          <div style={hypeCycleScreenStyles.errorContainer(isMobile)}>
+            <div style={hypeCycleScreenStyles.errorIcon}>
               !
             </div>
             <div>
@@ -612,85 +384,45 @@ const HypeCycleScreen: React.FC = () => {
 
         {/* Results */}
         {results && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '2rem'
-          }}>
+          <div ref={resultsRef} style={hypeCycleScreenStyles.resultsContainer}>
             {/* Phase Result Card */}
-            <div style={{
-              background: 'white',
-              borderRadius: '16px',
-              padding: isMobile ? '1.5rem' : '2rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e2e8f0'
-            }}>
-              <div style={{
-                background: `${hypecycleService.getPhaseColor(results.phase)}15`,
-                border: `2px solid ${hypecycleService.getPhaseColor(results.phase)}`,
-                borderRadius: '16px',
-                padding: '2rem',
-                textAlign: 'center',
-                marginBottom: '2rem'
-              }}>
-                <div style={{
-                  fontSize: isMobile ? '1.5rem' : '2rem',
-                  fontWeight: 'bold',
-                  color: hypecycleService.getPhaseColor(results.phase),
-                  marginBottom: '1rem'
-                }}>
+            <div style={hypeCycleScreenStyles.phaseCard(isMobile)}>
+              <div style={hypeCycleScreenStyles.phaseHighlight(hypecycleService.getPhaseColor(results.phase))}>
+                <div style={hypeCycleScreenStyles.phaseTitle(hypecycleService.getPhaseColor(results.phase), isMobile)}>
                   {results.phase}
                 </div>
                 
-                <div style={{
-                  fontSize: isMobile ? '0.9rem' : '1rem',
-                  color: '#374151',
-                  marginBottom: '1rem'
-                }}>
+                <div style={hypeCycleScreenStyles.phaseDescription(isMobile)}>
                   {hypecycleService.getPhaseDescription(results.phase)}
                 </div>
 
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: '2rem',
-                  flexWrap: 'wrap'
-                }}>
-                  <div style={{textAlign: 'center'}}>
-                    <div style={{
-                      fontSize: isMobile ? '1.2rem' : '1.5rem',
-                      fontWeight: 'bold',
-                      color: hypecycleService.getConfidenceColor(results.confidence)
-                    }}>
+                <div style={hypeCycleScreenStyles.phaseStats}>
+                  <div style={hypeCycleScreenStyles.statItem}>
+                    <div style={hypeCycleScreenStyles.statValue(
+                      hypecycleService.getConfidenceColor(results.confidence), 
+                      isMobile
+                    )}>
                       {(results.confidence * 100).toFixed(0)}%
                     </div>
-                    <div style={{fontSize: '0.9rem', color: '#6b7280'}}>
+                    <div style={hypeCycleScreenStyles.statLabel}>
                       Confianza {hypecycleService.getConfidenceLabel(results.confidence)}
                     </div>
                   </div>
                   
-                  <div style={{textAlign: 'center'}}>
-                    <div style={{
-                      fontSize: isMobile ? '1.2rem' : '1.5rem',
-                      fontWeight: 'bold',
-                      color: '#1e293b'
-                    }}>
+                  <div style={hypeCycleScreenStyles.statItem}>
+                    <div style={hypeCycleScreenStyles.statValue('#1e293b', isMobile)}>
                       {results.total_mentions.toLocaleString()}
                     </div>
-                    <div style={{fontSize: '0.9rem', color: '#6b7280'}}>
+                    <div style={hypeCycleScreenStyles.statLabel}>
                       Menciones Totales
                     </div>
                   </div>
                   
-                  <div style={{textAlign: 'center'}}>
-                    <div style={{
-                      fontSize: isMobile ? '1.2rem' : '1.5rem',
-                      fontWeight: 'bold',
-                      color: '#1e293b'
-                    }}>
+                  <div style={hypeCycleScreenStyles.statItem}>
+                    <div style={hypeCycleScreenStyles.statValue('#1e293b', isMobile)}>
                       {results.news_results.length}
                     </div>
-                    <div style={{fontSize: '0.9rem', color: '#6b7280'}}>
+                    <div style={hypeCycleScreenStyles.statLabel}>
                       Artículos Analizados
                     </div>
                   </div>
@@ -698,37 +430,18 @@ const HypeCycleScreen: React.FC = () => {
               </div>
 
               {/* Tabs */}
-              <div style={{
-                display: 'flex',
-                borderBottom: '2px solid #f1f5f9',
-                marginBottom: '2rem',
-                overflowX: 'auto'
-              }}>
-                {[
-                  { key: 'overview', label: 'Resumen', icon: TrendingUp },
-                  { key: 'details', label: 'Detalles', icon: BarChart3 },
-                  { key: 'geographic', label: 'Geográfico', icon: MapPin },
-                  { key: 'news', label: 'Noticias', icon: Eye }
-                ].map(tab => {
+              <div style={hypeCycleScreenStyles.tabsContainer(isMobile)}>
+                {tabs.map(tab => {
                   const Icon = tab.icon;
                   return (
                     <button
                       key={tab.key}
-                      onClick={() => setActiveTab(tab.key as any)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        padding: '1rem 1.5rem',
-                        cursor: 'pointer',
-                        fontSize: '1rem',
-                        fontWeight: '600',
-                        color: activeTab === tab.key ? hypecycleService.getPhaseColor(results.phase) : '#64748b',
-                        borderBottom: activeTab === tab.key ? `3px solid ${hypecycleService.getPhaseColor(results.phase)}` : '3px solid transparent',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        minWidth: 'max-content'
-                      }}
+                      onClick={() => handleTabChange(tab.key)}
+                      style={hypeCycleScreenStyles.tabButton(
+                        activeTab === tab.key, 
+                        hypecycleService.getPhaseColor(results.phase),
+                        isMobile
+                      )}
                     >
                       <Icon size={18} />
                       {tab.label}
@@ -738,10 +451,10 @@ const HypeCycleScreen: React.FC = () => {
               </div>
 
               {/* Tab Content */}
-              <div>
+              <div style={hypeCycleScreenStyles.tabContent}>
                 {activeTab === 'overview' && (
                   <div style={{display: 'flex', flexDirection: 'column', gap: '2rem'}}>
-                    <InsightsPanel insights={results.insights} />
+                    <InsightsPanel insights={results.insights} isMobile={isMobile} />
                     <HypeCycleChart 
                       chartData={results.chart_data} 
                       currentPhase={results.phase}
@@ -776,12 +489,7 @@ const HypeCycleScreen: React.FC = () => {
         )}
       </div>
 
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      <style>{hypeCycleScreenStyles.spinKeyframes}</style>
     </div>
   );
 };
