@@ -179,7 +179,7 @@ const LoginScreen: React.FC = () => {
       <div style={styles.logoImageContainer}>
         {!logoError ? (
           <img 
-            src="/src/assets/logo/logo.png" 
+            src="/assets/logo/logo.png" 
             alt="CycleAI" 
             style={styles.logoImage}
             onError={handleLogoError}

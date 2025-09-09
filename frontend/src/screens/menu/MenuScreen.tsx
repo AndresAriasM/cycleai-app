@@ -1,30 +1,55 @@
-// src/screens/menu/MenuScreen.tsx - OPTIMIZADO
+// src/screens/menu/MenuScreen.tsx - VERSION MEJORADA
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   BarChart3, 
   Brain, 
-  ChevronRight
+  ChevronRight,
+  TrendingUp,
+  Zap,
+  Target,
+  GitBranch,
+  Activity,
+  Layers,
+  Cpu,
+  Network
 } from 'lucide-react';
 import MainLayout from '../../components/layout/MainLayout';
 import { 
-  createMenuScreenStyles,
   calculateProgress,
   getGreeting
 } from '../../styles/menu/MenuScreenStyles';
-import type { 
-  User, 
-  Category 
-} from '../../styles/menu/MenuScreenStyles';
+
+interface User {
+  id: string;
+  name: string;
+  role: string;
+  level: string;
+  xp: number;
+  maxXp: number;
+  streak: number;
+  analysisCredits: number;
+  maxAnalysisCredits: number;
+  aiCredits: number;
+  maxAiCredits: number;
+  avatar?: string;
+}
+
+interface Category {
+  name: string;
+  shortName?: string;
+  analysisCount: number;
+  color: string;
+  isFrequent?: boolean;
+  icon?: React.ElementType;
+  description?: string;
+}
 
 const MenuScreen: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [hoveredElement, setHoveredElement] = useState<string | null>(null);
-
-  // Crear estilos basados en si es móvil o no
-  const styles = createMenuScreenStyles(isMobile);
 
   // Detectar cambios de tamaño de pantalla
   useEffect(() => {
@@ -49,20 +74,71 @@ const MenuScreen: React.FC = () => {
     maxAnalysisCredits: 500,
     aiCredits: 101,
     maxAiCredits: 200,
-    avatar: '/src/assets/users/sergio.jpg'
+    avatar: '/assets/users/sergio.jpg'
   };
 
+  // Categorías frecuentes mejoradas con iconos y descripciones
   const frequentCategories: Category[] = [
-    { name: 'Hypecycle Gartner', shortName: 'Hypecycle', analysisCount: 0, color: '#8b5cf6', isFrequent: true },
-    { name: 'Matriz MICMAC', shortName: 'MICMAC', analysisCount: 0, color: '#06b6d4', isFrequent: true },
-    { name: 'Curvas en S', shortName: 'Curvas', analysisCount: 0, color: '#3b82f6', isFrequent: true },
-    { name: 'Método MACTUN', shortName: 'MACTUN', analysisCount: 0, color: '#10b981', isFrequent: true }
+    { 
+      name: 'Gartner Hype Cycle', 
+      shortName: 'Hype Cycle', 
+      analysisCount: 0, 
+      color: 'linear-gradient(135deg, #8b5cf6, #a855f7)', 
+      isFrequent: true,
+      icon: TrendingUp,
+      description: 'Análisis de madurez tecnológica'
+    },
+    { 
+      name: 'Matriz MICMAC', 
+      shortName: 'MICMAC', 
+      analysisCount: 0, 
+      color: 'linear-gradient(135deg, #06b6d4, #0891b2)', 
+      isFrequent: true,
+      icon: Layers,
+      description: 'Análisis estructural de sistemas'
+    },
+    { 
+      name: 'Curvas en S', 
+      shortName: 'Curvas S', 
+      analysisCount: 0, 
+      color: 'linear-gradient(135deg, #3b82f6, #2563eb)', 
+      isFrequent: true,
+      icon: Activity,
+      description: 'Evolución tecnológica'
+    },
+    { 
+      name: 'Método MACTUN', 
+      shortName: 'MACTUN', 
+      analysisCount: 0, 
+      color: 'linear-gradient(135deg, #10b981, #059669)', 
+      isFrequent: true,
+      icon: Target,
+      description: 'Análisis de factibilidad'
+    },
+    { 
+      name: 'Análisis STEEP', 
+      shortName: 'STEEP', 
+      analysisCount: 0, 
+      color: 'linear-gradient(135deg, #f59e0b, #d97706)', 
+      isFrequent: true,
+      icon: GitBranch,
+      description: 'Factores del entorno'
+    },
+    { 
+      name: 'Roadmap Tecnológico', 
+      shortName: 'Roadmap', 
+      analysisCount: 0, 
+      color: 'linear-gradient(135deg, #ef4444, #dc2626)', 
+      isFrequent: true,
+      icon: Network,
+      description: 'Planificación estratégica'
+    }
   ];
 
   const savedCategories: Category[] = [
-    { name: 'Agroindustry', analysisCount: 4, color: '#f59e0b' },
-    { name: 'Artificial Intelligence', analysisCount: 16, color: '#ef4444' },
-    { name: 'Education', analysisCount: 7, color: '#8b5cf6' }
+    { name: 'Agroindustria', analysisCount: 4, color: '#f59e0b', icon: Cpu },
+    { name: 'Inteligencia Artificial', analysisCount: 16, color: '#ef4444', icon: Brain },
+    { name: 'Educación Digital', analysisCount: 7, color: '#8b5cf6', icon: Zap }
   ];
 
   // Cálculos
@@ -88,6 +164,338 @@ const MenuScreen: React.FC = () => {
         type: 'hypecycle' 
       } 
     }});
+  };
+
+  // Estilos mejorados
+  const styles = {
+    welcomeCard: {
+      background: 'linear-gradient(135deg, #4c1d95 0%, #3730a3 100%)',
+      borderRadius: '20px',
+      padding: isMobile ? '1.5rem' : '2rem',
+      marginBottom: '1.5rem',
+      color: 'white',
+      boxShadow: '0 8px 32px rgba(76, 29, 149, 0.3)'
+    } as React.CSSProperties,
+
+    welcomeTitle: {
+      fontSize: isMobile ? '1.5rem' : '1.8rem',
+      fontWeight: 'bold',
+      marginBottom: '0.5rem',
+      lineHeight: '1.2'
+    } as React.CSSProperties,
+
+    creditsSection: {
+      marginBottom: '1.5rem'
+    } as React.CSSProperties,
+
+    creditsTitle: {
+      fontSize: isMobile ? '1rem' : '1.2rem',
+      marginBottom: '1rem',
+      fontWeight: '600',
+      opacity: 0.9
+    } as React.CSSProperties,
+
+    creditsGrid: {
+      display: 'grid',
+      gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+      gap: '1rem',
+      marginBottom: '1rem'
+    } as React.CSSProperties,
+
+    creditItem: {
+      display: 'flex',
+      flexDirection: 'column' as 'column',
+      gap: '0.5rem'
+    } as React.CSSProperties,
+
+    creditLabel: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      fontSize: isMobile ? '0.85rem' : '0.9rem'
+    } as React.CSSProperties,
+
+    progressBar: {
+      width: '100%',
+      height: '6px',
+      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+      borderRadius: '3px',
+      overflow: 'hidden'
+    } as React.CSSProperties,
+
+    progressFill: (progress: number, color: string) => ({
+      width: `${progress}%`,
+      height: '100%',
+      backgroundColor: color,
+      borderRadius: '3px',
+      transition: 'width 0.5s ease'
+    }),
+
+    upgradeButton: {
+      background: 'rgba(255,255,255,0.2)',
+      border: '1px solid rgba(255,255,255,0.3)',
+      color: 'white',
+      padding: isMobile ? '0.5rem 1rem' : '0.6rem 1.25rem',
+      borderRadius: '50px',
+      cursor: 'pointer',
+      fontWeight: '600',
+      fontSize: isMobile ? '0.85rem' : '0.9rem',
+      transition: 'all 0.3s ease',
+      width: isMobile ? '100%' : 'auto',
+      marginTop: isMobile ? '1rem' : '0'
+    } as React.CSSProperties,
+
+    upgradeButtonHover: {
+      background: 'rgba(255,255,255,0.3)',
+      transform: 'translateY(-1px)'
+    } as React.CSSProperties,
+
+    userStats: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: isMobile ? 'flex-start' : 'center',
+      flexDirection: isMobile ? 'column' : 'row',
+      gap: isMobile ? '0.75rem' : '0',
+      marginBottom: '1rem'
+    } as React.CSSProperties,
+
+    userStatsLeft: {
+      display: 'flex',
+      flexDirection: 'column' as 'column',
+      gap: '0.25rem'
+    } as React.CSSProperties,
+
+    userStatsRight: {
+      textAlign: isMobile ? 'left' : 'right' as 'left' | 'right'
+    } as React.CSSProperties,
+
+    userLevel: {
+      fontSize: isMobile ? '0.8rem' : '0.85rem',
+      opacity: 0.8,
+      marginBottom: '0.25rem'
+    } as React.CSSProperties,
+
+    userStreak: {
+      fontSize: isMobile ? '0.8rem' : '0.85rem',
+      opacity: 0.8
+    } as React.CSSProperties,
+
+    userXp: {
+      fontSize: isMobile ? '1.1rem' : '1.2rem',
+      fontWeight: 'bold'
+    } as React.CSSProperties,
+
+    xpProgressBar: {
+      width: '100%',
+      height: '6px',
+      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+      borderRadius: '3px',
+      overflow: 'hidden'
+    } as React.CSSProperties,
+
+    card: {
+      background: 'white',
+      borderRadius: '16px',
+      padding: isMobile ? '1.25rem' : '1.5rem',
+      marginBottom: '1.5rem',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      border: '1px solid #e2e8f0'
+    } as React.CSSProperties,
+
+    cardTitle: {
+      fontSize: isMobile ? '1.15rem' : '1.3rem',
+      fontWeight: 'bold',
+      marginBottom: '1.25rem',
+      color: '#1e293b'
+    } as React.CSSProperties,
+
+    // Nuevos estilos para categorías profesionales
+    categoriesGrid: {
+      display: 'grid',
+      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+      gap: isMobile ? '1rem' : '1.5rem'
+    } as React.CSSProperties,
+
+    categoryCard: (color: string) => ({
+      background: 'white',
+      borderRadius: '16px',
+      padding: '1.5rem',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      border: `2px solid ${color}20`, // Usa el color con transparencia para el borde
+      position: 'relative',
+      overflow: 'hidden',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+    } as React.CSSProperties),
+
+    categoryCardHover: {
+      transform: 'translateY(-4px)',
+      boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+      borderColor: '#e2e8f0'
+    } as React.CSSProperties,
+
+    categoryHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: '1rem'
+    } as React.CSSProperties,
+
+    categoryIcon: (color: string) => ({
+      width: '48px',
+      height: '48px',
+      borderRadius: '12px',
+      background: color,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: 'white',
+      marginBottom: '1rem'
+    } as React.CSSProperties),
+
+    categoryName: {
+      fontSize: isMobile ? '0.95rem' : '1.1rem',
+      fontWeight: '700',
+      color: '#1e293b',
+      marginBottom: '0.5rem',
+      lineHeight: '1.3'
+    } as React.CSSProperties,
+
+    categoryDescription: {
+      fontSize: isMobile ? '0.8rem' : '0.85rem',
+      color: '#64748b',
+      lineHeight: '1.4',
+      marginBottom: '1rem'
+    } as React.CSSProperties,
+
+    categoryFooter: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    } as React.CSSProperties,
+
+    categoryStatus: {
+      fontSize: '0.75rem',
+      color: '#10b981',
+      fontWeight: '600',
+      background: '#ecfdf5',
+      padding: '0.25rem 0.75rem',
+      borderRadius: '12px'
+    } as React.CSSProperties,
+
+    savedCategoriesList: {
+      display: 'flex',
+      flexDirection: 'column' as 'column',
+      gap: '0.75rem'
+    } as React.CSSProperties,
+
+    savedCategoryItem: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: isMobile ? '1rem' : '1.25rem',
+      background: '#f8fafc',
+      borderRadius: '12px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      border: '1px solid #e2e8f0'
+    } as React.CSSProperties,
+
+    savedCategoryItemHover: {
+      background: '#e2e8f0',
+      transform: 'translateY(-1px)'
+    } as React.CSSProperties,
+
+    savedCategoryContent: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '1rem',
+      flex: 1
+    } as React.CSSProperties,
+
+    savedCategoryIconWrapper: (color: string) => ({
+      width: '40px',
+      height: '40px',
+      borderRadius: '10px',
+      background: color,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: 'white'
+    } as React.CSSProperties),
+
+    savedCategoryInfo: {
+      flex: 1
+    } as React.CSSProperties,
+
+    savedCategoryName: {
+      fontWeight: '600',
+      color: '#1e293b',
+      fontSize: isMobile ? '0.95rem' : '1rem',
+      marginBottom: '0.25rem'
+    } as React.CSSProperties,
+
+    savedCategoryMeta: {
+      fontSize: isMobile ? '0.8rem' : '0.85rem',
+      color: '#64748b'
+    } as React.CSSProperties,
+
+    savedCategoryActions: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem'
+    } as React.CSSProperties,
+
+    savedCategoryBadge: (color: string) => ({
+      background: color,
+      color: 'white',
+      padding: '0.25rem 0.75rem',
+      borderRadius: '12px',
+      fontSize: isMobile ? '0.75rem' : '0.8rem',
+      fontWeight: '600'
+    } as React.CSSProperties),
+
+    popularItem: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: isMobile ? '1rem' : '1.25rem',
+      background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+      borderRadius: '12px',
+      cursor: 'pointer',
+      border: '1px solid #f59e0b',
+      transition: 'transform 0.2s ease'
+    } as React.CSSProperties,
+
+    popularItemHover: {
+      transform: 'translateY(-2px)'
+    } as React.CSSProperties,
+
+    popularContent: {
+      display: 'flex',
+      alignItems: 'center'
+    } as React.CSSProperties,
+
+    popularIcon: {
+      fontSize: '1.5rem',
+      marginRight: '0.75rem'
+    } as React.CSSProperties,
+
+    popularInfo: {
+      display: 'flex',
+      flexDirection: 'column' as 'column'
+    } as React.CSSProperties,
+
+    popularTitle: {
+      fontWeight: 'bold',
+      color: '#92400e',
+      fontSize: isMobile ? '0.95rem' : '1rem'
+    } as React.CSSProperties,
+
+    popularSubtitle: {
+      fontSize: isMobile ? '0.8rem' : '0.85rem',
+      color: '#b45309'
+    } as React.CSSProperties
   };
 
   // Componentes
@@ -165,25 +573,44 @@ const MenuScreen: React.FC = () => {
   const FrequentCategories = () => (
     <div style={styles.card}>
       <h3 style={styles.cardTitle}>
-        Categorías Frecuentes
+        Herramientas de Análisis
       </h3>
       
       <div style={styles.categoriesGrid}>
-        {frequentCategories.map((category, index) => (
-          <div key={index} style={styles.categoryContainer}>
+        {frequentCategories.map((category, index) => {
+          const Icon = category.icon || BarChart3;
+          return (
             <div 
+              key={index}
               style={{
-                ...styles.categoryCircle(category.color),
-                ...(hoveredElement === `category-${index}` ? styles.categoryCircleHover : {})
+                ...styles.categoryCard(category.color),
+                ...(hoveredElement === `category-${index}` ? styles.categoryCardHover : {})
               }}
               onClick={() => handleCategoryClick(category)}
               onMouseEnter={() => setHoveredElement(`category-${index}`)}
               onMouseLeave={() => setHoveredElement(null)}
             >
-              {category.shortName || category.name}
+              <div style={styles.categoryIcon(category.color)}>
+                <Icon size={24} />
+              </div>
+              
+              <div style={styles.categoryName}>
+                {category.shortName || category.name}
+              </div>
+              
+              <div style={styles.categoryDescription}>
+                {category.description}
+              </div>
+              
+              <div style={styles.categoryFooter}>
+                <div style={styles.categoryStatus}>
+                  Disponible
+                </div>
+                <ChevronRight size={16} color="#64748b" />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -191,32 +618,45 @@ const MenuScreen: React.FC = () => {
   const SavedCategories = () => (
     <div style={styles.card}>
       <h3 style={styles.cardTitle}>
-        Categorías Guardadas
+        Proyectos Guardados
       </h3>
       
       <div style={styles.savedCategoriesList}>
-        {savedCategories.map((category, index) => (
-          <div 
-            key={index} 
-            style={{
-              ...styles.savedCategoryItem,
-              ...(hoveredElement === `saved-${index}` ? styles.savedCategoryItemHover : {})
-            }}
-            onClick={() => handleSavedCategoryClick(category)}
-            onMouseEnter={() => setHoveredElement(`saved-${index}`)}
-            onMouseLeave={() => setHoveredElement(null)}
-          >
-            <span style={styles.savedCategoryName}>
-              {category.name}
-            </span>
-            <div style={styles.savedCategoryActions}>
-              <span style={styles.savedCategoryBadge(category.color)}>
-                {category.analysisCount} análisis
-              </span>
-              <ChevronRight size={18} color="#64748b" />
+        {savedCategories.map((category, index) => {
+          const Icon = category.icon || BarChart3;
+          return (
+            <div 
+              key={index} 
+              style={{
+                ...styles.savedCategoryItem,
+                ...(hoveredElement === `saved-${index}` ? styles.savedCategoryItemHover : {})
+              }}
+              onClick={() => handleSavedCategoryClick(category)}
+              onMouseEnter={() => setHoveredElement(`saved-${index}`)}
+              onMouseLeave={() => setHoveredElement(null)}
+            >
+              <div style={styles.savedCategoryContent}>
+                <div style={styles.savedCategoryIconWrapper(category.color)}>
+                  <Icon size={20} />
+                </div>
+                <div style={styles.savedCategoryInfo}>
+                  <div style={styles.savedCategoryName}>
+                    {category.name}
+                  </div>
+                  <div style={styles.savedCategoryMeta}>
+                    Último acceso: hace 2 días
+                  </div>
+                </div>
+              </div>
+              <div style={styles.savedCategoryActions}>
+                <span style={styles.savedCategoryBadge(category.color)}>
+                  {category.analysisCount} análisis
+                </span>
+                <ChevronRight size={18} color="#64748b" />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -224,7 +664,7 @@ const MenuScreen: React.FC = () => {
   const PopularSection = () => (
     <div style={styles.card}>
       <h3 style={styles.cardTitle}>
-        Populares
+        Tendencias Populares
       </h3>
       
       <div 
@@ -243,7 +683,7 @@ const MenuScreen: React.FC = () => {
               AI + Robot + Agro
             </div>
             <div style={styles.popularSubtitle}>
-              Hypecycle
+              Análisis Hypecycle - +127% esta semana
             </div>
           </div>
         </div>

@@ -682,11 +682,13 @@ export const newsTableStyles = {
     transition: 'background 0.2s ease'
   } as CSSProperties,
 
+  /*
   // Items de noticias
   newsItem: (isMobile: boolean, isLast: boolean): CSSProperties => ({
     borderBottom: !isLast ? '1px solid #f1f5f9' : 'none',
     transition: 'background 0.2s ease'
   }),
+  */
 
   newsItemContent: (isMobile: boolean): CSSProperties => ({
     display: 'grid',
@@ -923,6 +925,7 @@ export const yearlyTrendsStyles = {
     gap: '2rem'
   }),
 
+  /*
   // Card del gráfico
   chartCard: (isMobile: boolean): CSSProperties => ({
     background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
@@ -931,6 +934,7 @@ export const yearlyTrendsStyles = {
     border: '1px solid #e2e8f0',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
   }),
+  */
 
   // SVG container
   svgContainer: (isMobile: boolean): CSSProperties => ({
@@ -974,12 +978,14 @@ export const yearlyTrendsStyles = {
     fontWeight: '500'
   } as CSSProperties,
 
+  /*
   // Container de estadísticas
   statsContainer: (isMobile: boolean): CSSProperties => ({
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem'
   }),
+  */
 
   // Card de estadísticas
   statsCard: {
@@ -1004,6 +1010,7 @@ export const yearlyTrendsStyles = {
     gap: '0.75rem'
   } as CSSProperties,
 
+  /*
   yearItem: (isMobile: boolean): CSSProperties => ({
     display: 'flex',
     justifyContent: 'space-between',
@@ -1014,6 +1021,7 @@ export const yearlyTrendsStyles = {
     border: '1px solid #e2e8f0',
     transition: 'all 0.2s ease'
   }),
+  */
 
   yearLabel: {
     fontWeight: '600',

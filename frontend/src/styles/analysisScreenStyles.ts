@@ -268,6 +268,7 @@ export const createAnalysisScreenStyles = ({ isMobile }: StylesConfig) => ({
     alignItems: 'center'
   } as CSSProperties,
 
+  /*
   difficultyBadge: (color: string) => ({
     display: 'flex',
     alignItems: 'center',
@@ -277,6 +278,7 @@ export const createAnalysisScreenStyles = ({ isMobile }: StylesConfig) => ({
     fontSize: '0.75rem',
     fontWeight: '500'
   } as CSSProperties),
+  */
 
   difficultyDot: (color: string) => ({
     width: '6px',

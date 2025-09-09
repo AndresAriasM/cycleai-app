@@ -21,7 +21,7 @@ import {
 import UserAvatar from '../../components/common/UserAvatar';
 import { 
   createUserProfileScreenStyles,
-  getSubscriptionColor,
+  //getSubscriptionColor,
   getSubscriptionFeatures,
   validatePassword,
   validateEmail,
@@ -83,7 +83,7 @@ const UserProfileScreen: React.FC = () => {
 
   // Avatares locales disponibles
   const availableAvatars = [
-    '/src/assets/users/sergio.jpg',
+    '/assets/users/sergio.jpg',
     '/src/assets/users/maria.jpg',
     '/src/assets/users/carlos.jpg',
     '/src/assets/users/ana.jpg',
